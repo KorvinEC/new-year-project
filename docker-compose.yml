@@ -27,8 +27,23 @@ services:
     environment:
       DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/postgres'
     depends_on:
-      - "postgres"
+      - postgres
 
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    command: sh -c "npm run dev"
+    tty: true
+    volumes:
+      - type: bind
+        source: ./frontend
+        target: /app
+        consistency: cached
+    ports:
+      - '5000:5000'
+    depends_on:
+      - backend
 
 volumes:
   database_data:
