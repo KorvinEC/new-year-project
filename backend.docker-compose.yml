@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - database_data:/var/lib/postgresql/data:cached
+
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    command: python app/main.py
+    tty: true
+    volumes:
+      - ./backend:/app/:cached
+      - ./.docker/.ipython:/root/.ipython:cached
+      - ./images:/app/images:cached
+    ports:
+        - '8000:8000'
+    environment:
+      DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/postgres'
+    depends_on:
+      - postgres
+
+volumes:
+  database_data:
