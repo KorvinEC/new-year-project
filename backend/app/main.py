@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from starlette.requests import Request
 import uvicorn
+import logging
 
 from authentication.auth import auth_router
 from core.auth import get_current_user
@@ -16,6 +17,17 @@ app = FastAPI(
 )
 
 
+def setup_logger():
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        handlers=[
+            logging.StreamHandler()
+        ]
+    )
+    return logging.getLogger(__name__)
+
+
 @app.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     request.state.db = SessionLocal()
@@ -26,6 +38,7 @@ async def db_session_middleware(request: Request, call_next):
 
 @app.on_event("startup")
 def on_startup():
+    setup_logger()
     create_tables()
 
 
