@@ -1,189 +1,142 @@
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Type
+import logging
 
 from fastapi import APIRouter, Depends, UploadFile
 from fastapi.responses import FileResponse, Response
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from core.auth import get_current_user
 from database.schemas import User
+from database.models import Cards, Templates
 from database.session import get_db
 from cards.templates_routes import templates_router
+from cards.schemas import Card, CreateCard, CardTemplateCreation
 
 cards_router = router = APIRouter()
 router.include_router(templates_router, prefix="/templates", dependencies=[Depends(get_current_user)])
 
-
-class CardData(BaseModel):
-    id: int
-    title: str
-    subtitle: str | None = None
-    description: str | None = None
-    image: bool = False
+logger = logging.getLogger(__name__)
 
 
-class Card(BaseModel):
-    id: int
-    data: list[CardData]
-
-
-@router.get("/")
+@router.get("/", response_model=list[Card])
 async def get_cards(
         db: Annotated[Session, Depends(get_db)],
-) -> list[Card]:
+) -> list[Type[Cards]]:
 
-    test_data = [
-        {
-            "id": 1,
-            "data": [
-                {
-                    "id": 1,
-                    "title": "test_title_1",
-                    "subtitle": "test_sub_title",
-                    "description": "test_description_1"
-                },
-                {
-                    "id": 2,
-                    "title": "test_title_2",
-                    "description": "test_description_2"
-                },
-                {
-                    "id": 3,
-                    "title": "test_title_3",
-                    "description": "test_description_3"
-                }
-            ]
-        },
-        {
-            "id": 2,
-            "data": [
-                {
-                    "id": 1,
-                    "title": "test_title_4",
-                    "description": "test_description_4"
-                },
-                {
-                    "id": 2,
-                    "title": "test_title_5",
-                    "description": "test_description_5"
-                }
-            ]
-        },
-        {
-            "id": 3,
-            "data": [
-                {
-                    "id": 1,
-                    "title": "test_title_",
-                    "description": "test_description_7"
-                },
-                {
-                    "id": 2,
-                    "title": "test_title_7",
-                    "description": "test_description_7"
-                },
-                {
-                    "id": 3,
-                    "title": "test_title_8",
-                    "description": "test_description_8"
-                },
-                {
-                    "id": 4,
-                    "title": "test_title_9",
-                    "description": "test_description_9"
-                }
-            ]
-        }
-    ]
+    cards = db.query(Cards).all()
 
-    return [Card(**test) for test in test_data]
+    for card in cards:
+        for item in card.data:
+            item["image"] = isinstance(item["image"], str)
+
+    return cards
 
 
-class CreateCardData(BaseModel):
-    description: str | None = None
-
-
-class CreateCard(BaseModel):
-    card_template_id: int
-    card_data: list[CreateCardData]
-
-
-@router.post("/")
+@router.post("/", response_model=Card)
 async def create_card(
         input_data: CreateCard,
         db: Annotated[Session, Depends(get_db)],
         current_user: Annotated[User, Depends(get_current_user)],
 ) -> Card:
 
-    test = {
-        "id": 1,
-        "data": [
-            {
-                "id": 1,
-                "title": "test_title_1",
-                "subtitle": "test_subtitle_1",
-                "description": "test_description_1",
-                "image": False
-            },
-            {
-                "id": 2,
-                "title": "test_title_2",
-                "subtitle": None,
-                "description": "test_description_2",
-                "image": True
-            },
-            {
-                "id": 3,
-                "title": "test_title_3",
-                "subtitle": None,
-                "description": None,
-                "image": False
-            }
-        ]
-    }
+    # TODO add exceptions
 
-    return Card(**test)
+    card_template = db\
+        .query(Templates)\
+        .filter(Templates.id == input_data.card_template_id)\
+        .one()
+    card_template_schema = CardTemplateCreation.model_validate(card_template)
+
+    if len(input_data.card_data) != len(card_template_schema.structure):
+        raise Exception("Card data length does not match template structure length")
+
+    card_data_to_database = []
+
+    for index, (card_data, template_structure) in enumerate(
+            zip(input_data.card_data, card_template_schema.structure), start=1
+    ):
+        card_data_to_database.append({
+            "id": index,
+            "image": None,
+            **card_data.dict(),
+            **template_structure
+        })
+
+    card_data_model = Cards(
+        data=card_data_to_database,
+        user_id=current_user.id,
+        template_id=card_template.id
+    )
+    db.add(card_data_model)
+    db.commit()
+
+    for item in card_data_model.data:
+        item["image"] = isinstance(item["image"], str)
+
+    return card_data_model
 
 
-@router.get("/{card_id}")
+@router.get("/{card_id}", response_model=Card)
 async def get_card(
         card_id: int,
         db: Annotated[Session, Depends(get_db)],
-) -> Card:
+) -> Type[Card]:
 
-    test_data = {
-        "id": card_id,
-        "data": [
-            {
-                "id": 1,
-                "title": "test_title_1",
-                "subtitle": "test_sub_title",
-                "description": "test_description_1",
-                "image": True
-            },
-            {
-                "id": 2,
-                "title": "test_title_2",
-                "description": "test_description_2"
-            },
-            {
-                "id": 3,
-                "title": "test_title_3",
-                "description": "test_description_3"
-            }
-        ]
-    }
+    card = db.query(Cards).filter(Cards.id == card_id).one()
 
-    return Card(**test_data)
+    for item in card.data:
+        item["image"] = isinstance(item["image"], str)
+
+    return card
 
 
-@router.post("/{card_id}/images")
+@router.post("/{card_id}/images/{image_id}")
 async def add_card(
         card_id: int,
+        image_id: int,
         image_file: UploadFile,
         db: Annotated[Session, Depends(get_db)],
 ) -> Response:
+
+    card = db.query(Cards).filter(Cards.id == card_id).one()
+
+    # Check if this item exists
+
+    try:
+        card_data = [item for item in card.data if item["id"] == image_id][0]
+    except IndexError:
+        return Response(status_code=400, content="Card does not exist")
+
+    # Check if this item has an image and delete it
+
+    image_path: str | None = card_data.get("image", None)
+
+    if image_path and (image_path_obj := Path(image_path)).exists():
+        image_path_obj.unlink()
+
+    file_path = Path(f'/app/images/{card.id}/{image_id}/{image_file.filename}')
+
+    card_data["image"] = file_path.as_posix()
+
+    # Create directory if it does not exist
+
+    if not file_path.parent.exists():
+        file_path.parent.mkdir(parents=True)
+
+    # Save image
+
+    try:
+        with open(file_path, "wb") as buffer:
+            buffer.write(image_file.file.read())
+    finally:
+        image_file.file.close()
+
+    # Save changes to database
+
+    flag_modified(card, "data")
+    db.commit()
 
     return Response(status_code=200)
 
@@ -195,6 +148,13 @@ async def get_card_image(
         db: Annotated[Session, Depends(get_db)],
 ) -> FileResponse:
 
-    file_path = Path('/app/images/Test.svg')
+    card = db.query(Cards).filter(Cards.id == card_id).one()
 
-    return FileResponse(file_path)
+    image_path = card.data[image_id].get("image", None)
+
+    image_path_obj = Path(image_path)
+
+    if not image_path_obj.exists():
+        raise Exception("Image does not exist")
+
+    return FileResponse(image_path_obj)

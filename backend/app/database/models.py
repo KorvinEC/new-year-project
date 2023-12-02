@@ -24,11 +24,16 @@ class Templates(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped[Users] = relationship(back_populates="templates")
 
+    cards: Mapped[list["Cards"]] = relationship(back_populates="template")
+
 
 class Cards(Base):
     __tablename__ = "cards"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    data: Mapped[dict[str, dict[str, str]]] = Column(JSON, nullable=False)
+    data: Mapped[list[dict[str, str]]] = Column(JSON, nullable=False)
 
-    template_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    template_id: Mapped[int] = mapped_column(ForeignKey("templates.id"), nullable=False)
+    template: Mapped[Templates] = relationship(back_populates="cards")
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)

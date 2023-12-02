@@ -1,12 +1,15 @@
-from pydantic import BaseModel, Json
+from typing import Annotated
+from pydantic import BaseModel, Json, field_validator
 
+
+# Card templates schemas
 
 class CardTemplateStruct(BaseModel):
     title: str
     subtitle: str | None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CardTemplateTitles(BaseModel):
@@ -18,7 +21,7 @@ class User(BaseModel):
     nickname: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CardTemplate(BaseModel):
@@ -27,5 +30,37 @@ class CardTemplate(BaseModel):
     user: User
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
+
+# Cards schemas
+
+
+class CardTemplateCreation(BaseModel):
+    id: int
+    structure: Json
+
+    class Config:
+        from_attributes=True
+
+
+class CardData(BaseModel):
+    id: int
+    title: str
+    subtitle: str | None = None
+    description: str | None = None
+    image: bool = False
+
+
+class Card(BaseModel):
+    id: int
+    data: list[CardData]
+
+
+class CreateCardData(BaseModel):
+    description: str | None = None
+
+
+class CreateCard(BaseModel):
+    card_template_id: int
+    card_data: list[CreateCardData]
