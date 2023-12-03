@@ -2,17 +2,24 @@ from pathlib import Path
 from typing import Annotated, Type
 import logging
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, UploadFile, status
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
 from core.auth import get_current_user
 from database.schemas import User
-from database.models import Cards, Templates
+from database.models import Cards
 from database.session import get_db
+from cards.utils import get_card_template_by_id, update_card_images, get_card_by_id
 from cards.templates_routes import templates_router
 from cards.schemas import Card, CreateCard, CardTemplateCreation
+from cards.exceptions import (
+    CardDataLengthNotMatch,
+    CardDataNotFound,
+    CardDataImageNotFound,
+    CardDataImageDoesNotExist,
+)
 
 cards_router = router = APIRouter()
 router.include_router(templates_router, prefix="/templates", dependencies=[Depends(get_current_user)])
@@ -27,9 +34,7 @@ async def get_cards(
 
     cards = db.query(Cards).all()
 
-    for card in cards:
-        for item in card.data:
-            item["image"] = isinstance(item["image"], str)
+    [update_card_images(card) for card in cards]
 
     return cards
 
@@ -41,21 +46,17 @@ async def create_card(
         current_user: Annotated[User, Depends(get_current_user)],
 ) -> Card:
 
-    # TODO add exceptions
-
-    card_template = db\
-        .query(Templates)\
-        .filter(Templates.id == input_data.card_template_id)\
-        .one()
+    card_template = get_card_template_by_id(input_data.card_template_id, db)
     card_template_schema = CardTemplateCreation.model_validate(card_template)
 
     if len(input_data.card_data) != len(card_template_schema.structure):
-        raise Exception("Card data length does not match template structure length")
+        raise CardDataLengthNotMatch
 
     card_data_to_database = []
 
     for index, (card_data, template_structure) in enumerate(
-            zip(input_data.card_data, card_template_schema.structure), start=1
+            zip(input_data.card_data, card_template_schema.structure),
+            start=1
     ):
         card_data_to_database.append({
             "id": index,
@@ -72,8 +73,7 @@ async def create_card(
     db.add(card_data_model)
     db.commit()
 
-    for item in card_data_model.data:
-        item["image"] = isinstance(item["image"], str)
+    update_card_images(card_data_model)
 
     return card_data_model
 
@@ -84,30 +84,27 @@ async def get_card(
         db: Annotated[Session, Depends(get_db)],
 ) -> Type[Card]:
 
-    card = db.query(Cards).filter(Cards.id == card_id).one()
+    card = get_card_by_id(card_id, db)
 
-    for item in card.data:
-        item["image"] = isinstance(item["image"], str)
-
-    return card
+    return update_card_images(card)
 
 
-@router.post("/{card_id}/images/{image_id}")
+@router.post("/{card_id}/images/{data_id}")
 async def add_card(
         card_id: int,
-        image_id: int,
+        data_id: int,
         image_file: UploadFile,
         db: Annotated[Session, Depends(get_db)],
 ) -> Response:
 
-    card = db.query(Cards).filter(Cards.id == card_id).one()
+    card = get_card_by_id(card_id, db)
 
     # Check if this item exists
 
     try:
-        card_data = [item for item in card.data if item["id"] == image_id][0]
+        card_data = [item for item in card.data if item["id"] == data_id][0]
     except IndexError:
-        return Response(status_code=400, content="Card does not exist")
+        raise CardDataNotFound(card_id, data_id)
 
     # Check if this item has an image and delete it
 
@@ -116,7 +113,7 @@ async def add_card(
     if image_path and (image_path_obj := Path(image_path)).exists():
         image_path_obj.unlink()
 
-    file_path = Path(f'/app/images/{card.id}/{image_id}/{image_file.filename}')
+    file_path = Path(f'/app/images/{card.id}/{data_id}_{image_file.filename}')
 
     card_data["image"] = file_path.as_posix()
 
@@ -138,23 +135,29 @@ async def add_card(
     flag_modified(card, "data")
     db.commit()
 
-    return Response(status_code=200)
+    return Response(status_code=status.HTTP_201_CREATED)
 
 
-@router.get("/{card_id}/images/{image_id}")
+@router.get("/{card_id}/images/{data_id}")
 async def get_card_image(
         card_id: int,
-        image_id: int,
+        data_id: int,
         db: Annotated[Session, Depends(get_db)],
 ) -> FileResponse:
 
-    card = db.query(Cards).filter(Cards.id == card_id).one()
+    card = get_card_by_id(card_id, db)
 
-    image_path = card.data[image_id].get("image", None)
+    try:
+        image_path = card.data[data_id].get("image", None)
+    except IndexError:
+        raise CardDataNotFound(card_id, data_id)
+
+    if not image_path:
+        raise CardDataImageNotFound(card_id, data_id)
 
     image_path_obj = Path(image_path)
 
     if not image_path_obj.exists():
-        raise Exception("Image does not exist")
+        raise CardDataImageDoesNotExist(card_id, data_id)
 
     return FileResponse(image_path_obj)
