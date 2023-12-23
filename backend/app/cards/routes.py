@@ -120,6 +120,40 @@ async def add_suggestions_to_card(
     return card
 
 
+@router.delete("/{card_id}")
+async def delete_card(
+        card_id: int,
+        db: Annotated[Session, Depends(get_db)],
+) -> Response:
+
+    card = get_card_by_id(card_id, db)
+
+    db.delete(card)
+    db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete("/{card_id}/data/{data_id}", response_model=Card)
+async def delete_sub_card(
+        card_id: int,
+        data_id: int,
+        card_data_type: Annotated[CardDataTypes, Query(...)],
+        db: Annotated[Session, Depends(get_db)],
+) -> Type[Card]:
+
+    card, _ = get_card_data_by_id(card_id, data_id, card_data_type, db)
+
+    logger.debug(f"{card.data = }")
+
+    card.data[card_data_type.name] = [item for item in card.data[card_data_type.name] if item["id"] != data_id]
+
+    flag_modified(card, "data")
+    db.commit()
+
+    return card
+
+
 @router.post("/{card_id}/data/{data_id}/image")
 async def add_image_to_card(
         card_id: int,
