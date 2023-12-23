@@ -1,2 +1,5 @@
 venv
 http_requests
+*__pycache__/
+images
+.idea
