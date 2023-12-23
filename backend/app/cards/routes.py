@@ -11,7 +11,7 @@ from core.auth import get_current_user
 from database.schemas import User
 from database.models import Cards
 from database.session import get_db
-from cards.utils import get_card_template_by_id, get_card_by_id
+from cards.utils import get_card_template_by_id, get_card_by_id, get_card_data_by_id
 from cards.templates_routes import templates_router
 from cards.schemas import Card, CreateCard, CardTemplateCreation
 from cards.exceptions import (
@@ -92,14 +92,7 @@ async def add_card(
         request: Request,
 ) -> Response:
 
-    card = get_card_by_id(card_id, db)
-
-    # Check if this item exists
-
-    try:
-        card_data = [item for item in card.data if item["id"] == data_id][0]
-    except IndexError:
-        raise CardDataNotFound(card_id, data_id)
+    card, card_data = get_card_data_by_id(card_id, data_id, db)
 
     # Check if this item has an image and delete it
 
@@ -110,7 +103,8 @@ async def add_card(
 
     file_path = Path(f'/app/images/{card.id}/{data_id}_{image_file.filename}')
 
-    card_data["image"] = str(request.url)
+    card_data["image_url"] = str(request.url)
+    card_data["image_path"] = file_path.as_posix()
 
     # Create directory if it does not exist
 
@@ -140,10 +134,10 @@ async def get_card_image(
         db: Annotated[Session, Depends(get_db)],
 ) -> FileResponse:
 
-    card = get_card_by_id(card_id, db)
+    _, card_data = get_card_data_by_id(card_id, data_id, db)
 
     try:
-        image_path = card.data[data_id].get("image", None)
+        image_path = card_data.get("image_path", None)
     except IndexError:
         raise CardDataNotFound(card_id, data_id)
 

@@ -49,7 +49,7 @@ class CardData(BaseModel):
     title: str
     subtitle: str | None = None
     description: str | None = None
-    image: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class Card(BaseModel):
