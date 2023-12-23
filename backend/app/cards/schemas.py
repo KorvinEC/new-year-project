@@ -1,5 +1,5 @@
-from typing import Annotated
-from pydantic import BaseModel, Json, field_validator
+from typing import Optional
+from pydantic import BaseModel, Json
 
 
 # Card templates schemas
@@ -49,7 +49,7 @@ class CardData(BaseModel):
     title: str
     subtitle: str | None = None
     description: str | None = None
-    image: bool = False
+    image: Optional[str] = None
 
 
 class Card(BaseModel):

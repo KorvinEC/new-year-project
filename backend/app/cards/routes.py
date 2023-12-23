@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Annotated, Type
 import logging
 
-from fastapi import APIRouter, Depends, UploadFile, status
+from fastapi import APIRouter, Depends, UploadFile, status, Request
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -11,7 +11,7 @@ from core.auth import get_current_user
 from database.schemas import User
 from database.models import Cards
 from database.session import get_db
-from cards.utils import get_card_template_by_id, update_card_images, get_card_by_id
+from cards.utils import get_card_template_by_id, get_card_by_id
 from cards.templates_routes import templates_router
 from cards.schemas import Card, CreateCard, CardTemplateCreation
 from cards.exceptions import (
@@ -32,11 +32,7 @@ async def get_cards(
         db: Annotated[Session, Depends(get_db)],
 ) -> list[Type[Cards]]:
 
-    cards = db.query(Cards).all()
-
-    [update_card_images(card) for card in cards]
-
-    return cards
+    return db.query(Cards).all()
 
 
 @router.post("/", response_model=Card)
@@ -73,8 +69,6 @@ async def create_card(
     db.add(card_data_model)
     db.commit()
 
-    update_card_images(card_data_model)
-
     return card_data_model
 
 
@@ -86,7 +80,7 @@ async def get_card(
 
     card = get_card_by_id(card_id, db)
 
-    return update_card_images(card)
+    return card
 
 
 @router.post("/{card_id}/images/{data_id}")
@@ -95,6 +89,7 @@ async def add_card(
         data_id: int,
         image_file: UploadFile,
         db: Annotated[Session, Depends(get_db)],
+        request: Request,
 ) -> Response:
 
     card = get_card_by_id(card_id, db)
@@ -115,7 +110,7 @@ async def add_card(
 
     file_path = Path(f'/app/images/{card.id}/{data_id}_{image_file.filename}')
 
-    card_data["image"] = file_path.as_posix()
+    card_data["image"] = str(request.url)
 
     # Create directory if it does not exist
 

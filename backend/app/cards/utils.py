@@ -17,15 +17,6 @@ def get_card_template_by_id(
         raise CardTemplateNotFound(template_id)
 
 
-def update_card_images(
-        card: Cards | Type[Cards],
-) -> Cards | Type[Cards]:
-    for item in card.data:
-        item["image"] = isinstance(item["image"], str)
-
-    return card
-
-
 def get_card_by_id(
         card_id: int,
         db: Session,
