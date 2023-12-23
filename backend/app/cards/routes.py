@@ -45,24 +45,35 @@ async def create_card(
     card_template = get_card_template_by_id(input_data.card_template_id, db)
     card_template_schema = CardTemplateCreation.model_validate(card_template)
 
-    if len(input_data.card_data) != len(card_template_schema.structure):
+    if len(input_data.card_nominations_data) != len(card_template_schema.structure):
         raise CardDataLengthNotMatch
 
-    card_data_to_database = []
+    card_nominations_to_database = []
+    card_suggestions_to_database = []
 
     for index, (card_data, template_structure) in enumerate(
-            zip(input_data.card_data, card_template_schema.structure),
+            zip(input_data.card_nominations_data, card_template_schema.structure),
             start=1
     ):
-        card_data_to_database.append({
+        card_nominations_to_database.append({
             "id": index,
             "image": None,
             **card_data.dict(),
             **template_structure
         })
 
+    for index, card_data in enumerate(input_data.card_suggestions_data, start=1):
+        card_suggestions_to_database.append({
+            "id": index,
+            "image": None,
+            **card_data.dict(),
+        })
+
     card_data_model = Cards(
-        data=card_data_to_database,
+        data={
+            "nominations": card_nominations_to_database,
+            "suggestions": card_suggestions_to_database
+        },
         user_id=current_user.id,
         template_id=card_template.id
     )

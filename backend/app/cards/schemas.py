@@ -46,21 +46,33 @@ class CardTemplateCreation(BaseModel):
 
 class CardData(BaseModel):
     id: int
-    title: str
+    title: str | None = None
     subtitle: str | None = None
     description: str | None = None
-    image_url: Optional[str] = None
+    image_url: str | None = None
+
+
+class CardCategories(BaseModel):
+    nominations: list[CardData]
+    suggestions: list[CardData]
 
 
 class Card(BaseModel):
     id: int
-    data: list[CardData]
+    data: CardCategories
 
 
-class CreateCardData(BaseModel):
+class CreateNominationData(BaseModel):
+    description: str | None = None
+
+
+class CreateSuggestionData(BaseModel):
+    title: str | None = None
+    subtitle: str | None = None
     description: str | None = None
 
 
 class CreateCard(BaseModel):
     card_template_id: int
-    card_data: list[CreateCardData]
+    card_nominations_data: list[CreateNominationData]
+    card_suggestions_data: list[CreateSuggestionData]
