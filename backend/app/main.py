@@ -7,6 +7,7 @@ import logging
 from authentication.auth import auth_router
 from core.auth import get_current_user
 from cards.routes import cards_router
+from users.routes import users_router
 from core import config
 from database.session import SessionLocal, create_tables
 
@@ -60,9 +61,8 @@ async def root():
     return {"message": "Hello World"}
 
 app.include_router(auth_router, prefix="/api/authentication", tags=["Authentication"])
-app.include_router(
-    cards_router, prefix="/api/cards", tags=["Cards"], dependencies=[Depends(get_current_user)]
-)
+app.include_router(cards_router, prefix="/api/cards", tags=["Cards"], dependencies=[Depends(get_current_user)])
+app.include_router(users_router, prefix="/api/users", tags=["Users"], dependencies=[Depends(get_current_user)])
 
 
 if __name__ == "__main__":

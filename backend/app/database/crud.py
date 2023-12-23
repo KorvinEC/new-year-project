@@ -52,24 +52,3 @@ def delete_user(db: Session, user_id: int):
     db.delete(user)
     db.commit()
     return user
-
-
-def edit_user(
-    db: Session, user_id: int, user: schemas.UserEdit
-) -> schemas.User:
-    db_user = get_user(db, user_id)
-    if not db_user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Users not found")
-    update_data = user.dict(exclude_unset=True)
-
-    if "password" in update_data:
-        update_data["hashed_password"] = get_password_hash(user.password)
-        del update_data["password"]
-
-    for key, value in update_data.items():
-        setattr(db_user, key, value)
-
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
