@@ -1,6 +1,6 @@
-import axios from 'axios';
+import AxiosApi from './axiosApi';
 
 export const getTemplate = async () => {
-    const data = await axios.get('/template');
+    const data = await AxiosApi.get('cards');
     return data;
 };

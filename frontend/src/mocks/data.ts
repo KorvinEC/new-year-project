@@ -46,8 +46,10 @@ const nomination4 = {
 
 export const yearTemplate = {
     nominations: [nomination, nomination1, nomination2, nomination3, nomination4],
+    suggestions: [nomination, nomination1, nomination2, nomination3, nomination4],
 };
 
 export const template = {
     nominations: [nomination, nomination1, nomination2, nomination3, nomination4],
+    suggestions: [nomination, nomination1, nomination2, nomination3, nomination4],
 };

@@ -1,8 +1,8 @@
+import AxiosApi from '@actions/axiosApi';
 import { UserSchema, useUserStore } from '@enteties/User/model';
 import {
     Box, Button, Grid, Link, TextField, styled,
 } from '@mui/material';
-import axios from 'axios';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +12,7 @@ const FormInput = styled(TextField)`
 `;
 
 interface authInfo {
-  email: string | null
+  username: string | null
   password: string | null
 }
 
@@ -20,11 +20,13 @@ export const AuthorizationForm = () => {
     const navigate = useNavigate();
     const [error, setError] = useState(false);
     async function loginAction(authInfo: authInfo) {
-        axios.post<authInfo, {data: {data: UserSchema}}>('/login', authInfo).then((res) => {
+        AxiosApi.post<authInfo, {data:UserSchema}>('/authentication/token', authInfo).then((res) => {
             navigate('/');
-            useUserStore.setState({ ...res.data.data, isAuth: true });
+            console.log(res);
+            useUserStore.setState({ access_token: res.data.access_token, isAuth: true });
         })
-            .catch(() => {
+            .catch((e) => {
+                console.log(e);
                 setError(true);
             });
     }
@@ -33,10 +35,7 @@ export const AuthorizationForm = () => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        mutauion.mutate({
-            email: data.get('email') as string,
-            password: data.get('password') as string,
-        });
+        mutauion.mutate(data);
     };
 
     return (
@@ -46,10 +45,10 @@ export const AuthorizationForm = () => {
                 margin="normal"
                 required
                 fullWidth
-                id="email"
+                id="username"
                 label="Email Address"
-                name="email"
-                autoComplete="email"
+                name="username"
+                autoComplete="username"
                 autoFocus
                 variant="filled"
                 helperText={error && 'Неправильный логин или пароль'}

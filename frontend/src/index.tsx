@@ -17,7 +17,9 @@ initI18n();
 const htmlRoot = document.getElementById('root') as HTMLElement;
 const reactRoot = ReactDOM.createRoot(htmlRoot);
 
-worker.start();
+// worker.start();
+
+console.log(import.meta.env);
 
 reactRoot.render(
     <BrowserRouter>

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export interface UserSchema {
     id: string
-    token: string | null
+    access_token: string | null
     name: string
     isAuth: boolean
     destroyUser(): void
@@ -10,7 +10,7 @@ export interface UserSchema {
 
 const initialState = {
     id: '',
-    token: null,
+    access_token: null,
     name: '',
     isAuth: false,
 };
