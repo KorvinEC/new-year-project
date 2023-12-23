@@ -1,5 +1,7 @@
 from fastapi import HTTPException, status
 
+from cards.schemas import CardDataTypes
+
 
 class CardTemplateNotFound(HTTPException):
     def __init__(self, template_id: int):
@@ -25,11 +27,19 @@ class CardNotFound(HTTPException):
         )
 
 
-class CardDataNotFound(HTTPException):
-    def __init__(self, card_id: int, data_id: int):
+class CardDataTypeNotFound(HTTPException):
+    def __init__(self, card_id: int, card_data_type: CardDataTypes):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Card with id {card_id} and data with id {data_id} not found"
+            detail=f"Card with id {card_id} doesn't have {card_data_type.name}"
+        )
+
+
+class CardDataNotFound(HTTPException):
+    def __init__(self, card_id: int, data_id: int, card_data_type: CardDataTypes):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Card with id {card_id} and data with id {data_id} not found in {card_data_type.name}"
         )
 
 

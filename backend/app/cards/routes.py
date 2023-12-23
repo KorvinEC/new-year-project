@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Annotated, Type
 import logging
 
-from fastapi import APIRouter, Depends, UploadFile, status, Request
+from fastapi import APIRouter, Depends, UploadFile, status, Request, Query
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -120,16 +120,17 @@ async def add_suggestions_to_card(
     return card
 
 
-@router.post("/{card_id}/images/{data_id}")
-async def add_card(
+@router.post("/{card_id}/data/{data_id}/image")
+async def add_image_to_card(
         card_id: int,
         data_id: int,
+        card_data_type: Annotated[CardDataTypes, Query(...)],
         image_file: UploadFile,
         db: Annotated[Session, Depends(get_db)],
         request: Request,
 ) -> Response:
 
-    card, card_data = get_card_data_by_id(card_id, data_id, db)
+    card, card_data = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
     # Check if this item has an image and delete it
 
@@ -164,14 +165,15 @@ async def add_card(
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@router.get("/{card_id}/images/{data_id}")
+@router.get("/{card_id}/data/{data_id}/image")
 async def get_card_image(
         card_id: int,
         data_id: int,
+        card_data_type: Annotated[CardDataTypes, Query(...)],
         db: Annotated[Session, Depends(get_db)],
 ) -> FileResponse:
 
-    _, card_data = get_card_data_by_id(card_id, data_id, db)
+    _, card_data = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
     try:
         image_path = card_data.get("image_path", None)

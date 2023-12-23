@@ -1,5 +1,10 @@
-from typing import Optional
 from pydantic import BaseModel, Json
+from enum import Enum
+
+
+class CardDataTypes(str, Enum):
+    nominations = "nominations"
+    suggestions = "suggestions"
 
 
 # Card templates schemas
