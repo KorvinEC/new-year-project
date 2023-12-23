@@ -13,7 +13,7 @@ from database.models import Cards
 from database.session import get_db
 from cards.utils import get_card_template_by_id, get_card_by_id, get_card_data_by_id
 from cards.templates_routes import templates_router
-from cards.schemas import Card, CreateCard, CardTemplateCreation
+from cards.schemas import Card, CreateCard, CardTemplateCreation, CardDataTypes, AddCardSuggestions
 from cards.exceptions import (
     CardDataLengthNotMatch,
     CardDataNotFound,
@@ -91,6 +91,32 @@ async def get_card(
 
     card = get_card_by_id(card_id, db)
 
+    return card
+
+
+@router.post("/{card_id}", response_model=Card, description="Add suggestions to card")
+async def add_suggestions_to_card(
+        card_id: int,
+        input_data: AddCardSuggestions,
+        db: Annotated[Session, Depends(get_db)],
+) -> Type[Card]:
+
+    card = get_card_by_id(card_id, db)
+
+    card_new_id = max([item["id"] for item in card.data["suggestions"]]) + 1
+
+    card.data["suggestions"].extend([
+        {
+            "id": index,
+            "image": None,
+            **card_data.dict(),
+        }
+        for index, card_data
+        in enumerate(input_data.card_suggestions_data, start=card_new_id)
+    ])
+
+    flag_modified(card, "data")
+    db.commit()
     return card
 
 

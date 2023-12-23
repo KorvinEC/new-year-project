@@ -76,3 +76,7 @@ class CreateCard(BaseModel):
     card_template_id: int
     card_nominations_data: list[CreateNominationData]
     card_suggestions_data: list[CreateSuggestionData]
+
+
+class AddCardSuggestions(BaseModel):
+    card_suggestions_data: list[CreateSuggestionData]
