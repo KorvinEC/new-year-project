@@ -12,7 +12,8 @@ class Users(Base):
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     nickname: Mapped[str]
 
-    templates: Mapped[list["Templates"]] = relationship(back_populates="user")
+    templates: Mapped[list["Templates"]] = relationship("Templates", back_populates="user",
+                                                        cascade="all, delete-orphan")
 
 
 class Templates(Base):
@@ -22,9 +23,9 @@ class Templates(Base):
     structure: Mapped[dict[str, str]] = Column(JSON, nullable=False)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    user: Mapped[Users] = relationship(back_populates="templates")
+    user: Mapped[Users] = relationship("Users", back_populates="templates")
 
-    cards: Mapped[list["Cards"]] = relationship(back_populates="template")
+    cards: Mapped[list["Cards"]] = relationship("Cards", back_populates="template", cascade="all, delete-orphan")
 
 
 class Cards(Base):
@@ -34,6 +35,6 @@ class Cards(Base):
     data: Mapped[list[dict[str, str]]] = Column(JSON, nullable=False)
 
     template_id: Mapped[int] = mapped_column(ForeignKey("templates.id"), nullable=False)
-    template: Mapped[Templates] = relationship(back_populates="cards")
+    template: Mapped[Templates] = relationship("Templates", back_populates="cards")
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)

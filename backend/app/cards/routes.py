@@ -1,28 +1,30 @@
+import logging
 from pathlib import Path
 from typing import Annotated, Type
-import logging
 
 from fastapi import APIRouter, Depends, UploadFile, status, Request, Query
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
-from core.auth import get_current_user
-from database.schemas import User
-from database.models import Cards
-from database.session import get_db
-from cards.utils import get_card_template_by_id, get_card_by_id, get_card_data_by_id
-from cards.templates_routes import templates_router
-from cards.schemas import Card, CreateCard, CardTemplateCreation, CardDataTypes, AddCardSuggestions
 from cards.exceptions import (
     CardDataLengthNotMatch,
     CardDataNotFound,
     CardDataImageNotFound,
     CardDataImageDoesNotExist,
 )
+from cards.schemas import Card, CreateCard, CardTemplateCreation, CardDataTypes, AddCardSuggestions
+from cards.templates_routes import templates_router
+from cards.utils import get_card_template_by_id, get_card_by_id, get_card_data_by_id
+from core.auth import get_current_user
+from database.models import Cards
+from database.schemas import User
+from database.session import get_db
 
 cards_router = router = APIRouter()
 router.include_router(templates_router, prefix="/templates", dependencies=[Depends(get_current_user)])
+
+public_router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +33,7 @@ logger = logging.getLogger(__name__)
 async def get_cards(
         db: Annotated[Session, Depends(get_db)],
 ) -> list[Type[Cards]]:
-
-    return db.query(Cards).all()
+    return db.query(Cards).order_by(Cards.id.desc()).all()
 
 
 @router.post("/", response_model=Card)
@@ -41,7 +42,6 @@ async def create_card(
         db: Annotated[Session, Depends(get_db)],
         current_user: Annotated[User, Depends(get_current_user)],
 ) -> Card:
-
     card_template = get_card_template_by_id(input_data.card_template_id, db)
     card_template_schema = CardTemplateCreation.model_validate(card_template)
 
@@ -88,7 +88,6 @@ async def get_card(
         card_id: int,
         db: Annotated[Session, Depends(get_db)],
 ) -> Type[Card]:
-
     card = get_card_by_id(card_id, db)
 
     return card
@@ -100,7 +99,6 @@ async def add_suggestions_to_card(
         input_data: AddCardSuggestions,
         db: Annotated[Session, Depends(get_db)],
 ) -> Type[Card]:
-
     card = get_card_by_id(card_id, db)
 
     card_new_id = max([item["id"] for item in card.data["suggestions"]]) + 1
@@ -109,7 +107,7 @@ async def add_suggestions_to_card(
         {
             "id": index,
             "image": None,
-            **card_data.dict(),
+            **card_data.model_dump(),
         }
         for index, card_data
         in enumerate(input_data.card_suggestions_data, start=card_new_id)
@@ -125,7 +123,6 @@ async def delete_card(
         card_id: int,
         db: Annotated[Session, Depends(get_db)],
 ) -> Response:
-
     card = get_card_by_id(card_id, db)
 
     db.delete(card)
@@ -141,7 +138,6 @@ async def delete_sub_card(
         card_data_type: Annotated[CardDataTypes, Query(...)],
         db: Annotated[Session, Depends(get_db)],
 ) -> Type[Card]:
-
     card, _ = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
     logger.debug(f"{card.data = }")
@@ -163,7 +159,6 @@ async def add_image_to_card(
         db: Annotated[Session, Depends(get_db)],
         request: Request,
 ) -> Response:
-
     card, card_data = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
     # Check if this item has an image and delete it
@@ -199,14 +194,13 @@ async def add_image_to_card(
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@router.get("/{card_id}/data/{data_id}/image")
+@public_router.get("/{card_id}/data/{data_id}/image")
 async def get_card_image(
         card_id: int,
         data_id: int,
         card_data_type: Annotated[CardDataTypes, Query(...)],
         db: Annotated[Session, Depends(get_db)],
 ) -> FileResponse:
-
     _, card_data = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
     try:
