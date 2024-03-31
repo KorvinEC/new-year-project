@@ -46,6 +46,11 @@ sample({
     target: submitLoginFx,
 })
 
+sample({
+    source: submitLoginFx.doneData,
+    target: currentUserFx,
+})
+
 $token
     .on(submitLoginFx.doneData, (_, data) => {
         return data.access_token
@@ -55,3 +60,15 @@ $token
             return Cookies.set('token', token)
         }
     })
+
+// Logout
+
+export const logoutEvent = createEvent()
+
+$token
+    .on(logoutEvent, () => {
+        console.log('Logout')
+        return Cookies.remove('token')
+    })
+
+$currentUser.reset(logoutEvent)

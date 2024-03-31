@@ -1,9 +1,9 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import {useGate} from "effector-react";
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
+import { useGate } from "effector-react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import {UserGate} from "./src/stores/Authorization"
+import { UserGate } from "./src/stores/Authorization"
 import Main from "./src/pages/Main";
 import Login from "./src/pages/Login";
 import Register from "./src/pages/Register";

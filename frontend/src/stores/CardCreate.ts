@@ -1,14 +1,19 @@
-import {createEffect, createEvent, createStore, sample} from "effector";
-import {CardType, CreateCardType} from "../types";
+import { createEffect, createEvent, createStore, sample } from "effector";
+import { CardType, CreateCardType } from "../types";
 import api from "../api.tsx";
-import {$template} from "./Template.ts";
+import { $template } from "./Template.ts";
 import persist from "effector-localstorage";
+import { logoutEvent } from "./Authorization.ts";
 
 export const $createCardData = createStore<CreateCardType>({
     card_template_id: null,
     card_nominations_data: [],
     card_suggestions_data: []
 })
+
+$createCardData
+    .on(logoutEvent, () => null)
+    .reset(logoutEvent)
 
 persist({
     store: $createCardData,
@@ -47,7 +52,6 @@ $createCardData
         newCardNominationsData[index] = {...newCardNominationsData[index], description, image_url};
         return {...state, card_nominations_data: newCardNominationsData};
     })
-    .watch(console.log)
 
 export const addCardSuggestion = createEvent();
 

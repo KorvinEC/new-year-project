@@ -6,6 +6,7 @@ import { NetworkError } from "../types/error.ts";
 import api from "../api.tsx";
 import { fetchTemplateFx } from "./Template.ts";
 import { submitTemplateFx } from "./TemplateCreate.ts";
+import { $token } from "./Authorization.ts";
 
 export const templatesFx = createEffect<void, TemplateType[], NetworkError>(
     async () => api.get('/cards/templates/')
@@ -18,7 +19,11 @@ export const TemplatesGate = createGate<void>()
 sample({
     source: TemplatesGate.open,
     target: templatesFx,
+})
 
+sample({
+    source: $token,
+    target: templatesFx
 })
 
 sample({
