@@ -1,5 +1,5 @@
 import {createEffect, createEvent, createStore, sample} from "effector";
-import {CardInfoType, CreateCardType} from "../types";
+import {CardType, CreateCardType} from "../types";
 import api from "../api.tsx";
 import {$template} from "./Template.ts";
 
@@ -11,14 +11,14 @@ export const $createCardData = createStore<CreateCardType>({
 
 sample({
     source: $template,
-    fn: (template) => ({
+    fn: (template): CreateCardType => ({
         card_template_id: template.id,
-        card_nominations_data: template.structure.map(item => ({
-            id: null,
+        card_nominations_data: template.structure.map((item, index) => ({
+            id: index,
             title: item.title,
             subtitle: item.subtitle,
             description: '',
-            image_url: ''
+            image: null
         })),
         card_suggestions_data: []
     }),
@@ -39,12 +39,11 @@ export const addCardSuggestion = createEvent();
 
 $createCardData
     .on(addCardSuggestion, (state) => {
-        const newCardSuggestionsData: CardInfoType = [...state.card_suggestions_data, {
-            id: null,
+        const newCardSuggestionsData: CreateCardInfoType = [...state.card_suggestions_data, {
+            id: state.card_suggestions_data.length,
             title: '',
             subtitle: '',
             description: '',
-            image_url: ''
         }];
         return {...state, card_suggestions_data: newCardSuggestionsData}
     });
@@ -89,7 +88,39 @@ export const submitCard = createEvent();
 export const submitCardFx = createEffect<CreateCardType, void, Error>(
     async (data) => {
         console.log("submitCardFx", data);
-        await api.post('/cards/', data);
+        const response: CardType = await api.post('/cards/', data);
+        console.log("response", response)
+
+        // upload all images in async
+
+        await Promise.all([
+            ...data.card_nominations_data.map((item) => {
+                if (item.image) {
+                    const formData = new FormData();
+                    formData.append('image_file', item.image);
+                    const params = {
+                        'card_data_type': 'nominations'
+                    };
+                    return api.post(
+                        `/cards/${response.id}/data/${item.id}/image/`,
+                        formData,
+                        {params: params}
+                    );
+                }
+            }),
+            ...data.card_suggestions_data.map((item) => {
+                if (item.image) {
+                    const formData = new FormData();
+                    formData.append('image_file', item.image);
+                    const params = {
+                        'card_data_type': 'suggestions'
+                    };
+                    return api.post(`/cards/${response.id}/data/${item.id}/image/`, formData, {
+                        params: params
+                    });
+                }
+            })
+        ]);
     }
 );
 
@@ -100,3 +131,24 @@ sample({
 });
 
 $createCardData.reset(submitCardFx.done);
+
+// Images
+
+export const updateCardImage = createEvent<{
+    index: number,
+    nomination: boolean,
+    image: File
+}>("update card image");
+
+$createCardData
+    .on(updateCardImage, (state, {index, nomination, image}) => {
+        if (nomination) {
+            const newCardNominationsData = [...state.card_nominations_data];
+            newCardNominationsData[index] = {...newCardNominationsData[index], image};
+            return {...state, card_nominations_data: newCardNominationsData};
+        } else {
+            const newCardSuggestionsData = [...state.card_suggestions_data];
+            newCardSuggestionsData[index] = {...newCardSuggestionsData[index], image};
+            return {...state, card_suggestions_data: newCardSuggestionsData};
+        }
+    });

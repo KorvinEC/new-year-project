@@ -6,6 +6,7 @@ import {
     addCardSuggestion,
     removeCardSuggestion,
     submitCard,
+    updateCardImage,
     updateCardNominationData,
     updateCardSuggestionData
 } from "../stores/CardCreate.ts";
@@ -33,6 +34,13 @@ const CardNominationItem = ({structure, index}: CardItemProps & { index: number 
         updateCardNominationData({index, [name]: value});
     }
 
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {files} = event.target;
+        if (files) {
+            updateCardImage({index, nomination: true, image: files[0]})
+        }
+    }
+
     return (
         <CardItemContainer>
             <label>Title: {structure.title}</label><br/>
@@ -41,6 +49,7 @@ const CardNominationItem = ({structure, index}: CardItemProps & { index: number 
             <input
                 type="file"
                 name="image_url"
+                onChange={handleImageChange}
             /><br/>
             <label>Description: </label>
             <input
@@ -57,6 +66,13 @@ const CardSuggestionItem = ({structure, index}: CardItemProps) => {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = event.target;
         updateCardSuggestionData({index, name, value});
+    }
+
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {files} = event.target;
+        if (files) {
+            updateCardImage({index, nomination: false, image: files[0]})
+        }
     }
 
     const handleRemove = () => {
@@ -87,6 +103,7 @@ const CardSuggestionItem = ({structure, index}: CardItemProps) => {
             <input
                 type="file"
                 name="image_url"
+                onChange={handleImageChange}
             />
             <br/>
 

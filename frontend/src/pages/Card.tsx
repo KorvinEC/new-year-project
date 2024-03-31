@@ -24,6 +24,11 @@ const CardContainer = styled.div`
     margin-bottom: 10px;
 `
 
+const ImageStyle = styled.img`
+    width: 200px;
+    height: 100px;
+`
+
 interface CardInfoProps {
     data: CardInfoType
 }
@@ -33,7 +38,7 @@ export const CardInfo = ({data}: CardInfoProps) => {
         <CardInfoContainer>
             {data.title && <p>Title: {data.title}</p>}
             {data.subtitle && <p>Subtitle: {data.subtitle}</p>}
-            {data.image_url && <img src={data.image_url} alt={data.title}/>}
+            {data.image_url && <ImageStyle src={data.image_url} alt={data.title}/>}
             {data.description && <p>Description: {data.description}</p>}
         </CardInfoContainer>
     )

@@ -53,11 +53,16 @@ export type CardType = {
     data: CardData
 }
 
+type CreateCardInfoType = {
+    id: number
+    title: string
+    subtitle: string
+    description: string
+    image: File
+}
 
 export type CreateCardType = {
-    card_template_id: number | null;
-    card_nominations_data: CardInfoType[];
-    card_suggestions_data: CardInfoType[];
+    card_template_id: number | null
+    card_nominations_data: CreateCardInfoType[]
+    card_suggestions_data: CreateCardInfoType[]
 };
-
-

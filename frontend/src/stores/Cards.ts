@@ -1,9 +1,10 @@
-import { createGate } from "effector-react";
-import { createEffect, createEvent, createStore, sample } from "effector";
+import {createGate} from "effector-react";
+import {createEffect, createEvent, createStore, sample} from "effector";
 
-import { CardType } from "../types";
-import { NetworkError } from "../types/error.ts";
+import {CardType} from "../types";
+import {NetworkError} from "../types/error.ts";
 import api from "../api.tsx";
+import {submitCardFx} from "./CardCreate.ts";
 
 
 export const $cards = createStore<CardType[]>([])
@@ -19,7 +20,13 @@ sample({
     target: fetchCardsFx
 })
 
-$cards.on(fetchCardsFx.doneData, (_, cards) => cards)
+sample({
+    source: submitCardFx.done,
+    target: fetchCardsFx
+})
+
+$cards
+    .on(fetchCardsFx.doneData, (_, cards) => cards)
 
 export const deleteCardFx = createEffect<number, void, NetworkError>(
     async (cardId) => {
