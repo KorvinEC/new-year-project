@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^1.6.3",
     "effector": "^23.1.0",
+    "effector-localstorage": "^1.0.0",
     "effector-react": "^23.1.0",
     "js-cookie": "^3.0.5",
     "react": "^18.2.0",

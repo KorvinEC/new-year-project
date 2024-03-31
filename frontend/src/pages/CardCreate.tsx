@@ -55,6 +55,7 @@ const CardNominationItem = ({structure, index}: CardItemProps & { index: number 
             <input
                 type="text"
                 name="description"
+                value={structure.description}
                 onChange={handleChange}
             />
         </CardItemContainer>

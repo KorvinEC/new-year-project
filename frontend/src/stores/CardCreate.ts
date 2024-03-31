@@ -2,12 +2,26 @@ import {createEffect, createEvent, createStore, sample} from "effector";
 import {CardType, CreateCardType} from "../types";
 import api from "../api.tsx";
 import {$template} from "./Template.ts";
+import persist from "effector-localstorage";
 
 export const $createCardData = createStore<CreateCardType>({
     card_template_id: null,
     card_nominations_data: [],
     card_suggestions_data: []
 })
+
+persist({
+    store: $createCardData,
+    key: 'createCardData',
+    adapter: {
+        get: (data) => {
+            return JSON.parse(data);
+        },
+        set: (data) => {
+            return JSON.stringify(data);
+        }
+    }
+});
 
 sample({
     source: $template,
