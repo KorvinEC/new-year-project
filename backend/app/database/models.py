@@ -1,5 +1,9 @@
-from sqlalchemy import Column, Integer, JSON, ForeignKey
+import uuid
+
+from sqlalchemy import Column, String, Integer, JSON, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy.sql import text
 
 from database.session import Base
 
@@ -38,3 +42,16 @@ class Cards(Base):
     template: Mapped[Templates] = relationship("Templates", back_populates="cards")
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    images: Mapped[list["Images"]] = relationship("Images", back_populates="card", cascade="all, delete-orphan")
+
+
+class Images(Base):
+    __tablename__ = "images"
+
+    id: Mapped[uuid.UUID] = Column(UUID(as_uuid=True), primary_key=True, server_default=text("(gen_random_uuid())"))
+    path: Mapped[str] = Column(String, nullable=False)
+    url: Mapped[str] = Column(String, nullable=False)
+
+    card_id: Mapped[int] = Column(ForeignKey("cards.id"), nullable=False)
+    card: Mapped[Cards] = relationship("Cards", back_populates="images")

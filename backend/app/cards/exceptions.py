@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import HTTPException, status
 
 from cards.schemas import CardDataTypes
@@ -56,4 +58,12 @@ class CardDataImageDoesNotExist(HTTPException):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Image for card with id {card_id} and data with id {data_id} does not exist"
+        )
+
+
+class ImageNotFound(HTTPException):
+    def __init__(self, uuid: UUID):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Image with id {uuid} not found"
         )

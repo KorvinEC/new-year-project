@@ -1,11 +1,12 @@
 from typing import Type
+from uuid import UUID
 
 import sqlalchemy
 from sqlalchemy.orm import Session
 
+from cards.exceptions import CardTemplateNotFound, CardNotFound, CardDataNotFound, CardDataTypeNotFound, ImageNotFound
 from cards.schemas import CardDataTypes
-from database.models import Templates, Cards
-from cards.exceptions import CardTemplateNotFound, CardNotFound, CardDataNotFound, CardDataTypeNotFound
+from database.models import Templates, Cards, Images
 
 
 def get_card_template_by_id(
@@ -34,7 +35,6 @@ def get_card_data_by_id(
         card_data_type: CardDataTypes,
         db: Session,
 ) -> (Type[Cards], dict):
-
     card = get_card_by_id(card_id, db)
 
     try:
@@ -43,3 +43,13 @@ def get_card_data_by_id(
         raise CardDataTypeNotFound(card_id, card_data_type)
     except IndexError:
         raise CardDataNotFound(card_id, data_id, card_data_type)
+
+
+def get_image_by_uuid(
+        uuid: UUID,
+        db: Session,
+) -> Type[Images]:
+    try:
+        return db.query(Images).filter(Images.id == uuid).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        raise ImageNotFound(uuid)

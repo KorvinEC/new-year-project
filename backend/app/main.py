@@ -1,11 +1,12 @@
 import logging
+
 import uvicorn
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
 from authentication.auth import auth_router
-from cards.routes import cards_router
+from cards.routes import cards_router, images_router
 from core import config
 from core.auth import get_current_user
 from database.session import SessionLocal, create_tables
@@ -63,6 +64,7 @@ async def root():
 app.include_router(auth_router, prefix="/api/authentication", tags=["Authentication"])
 app.include_router(cards_router, prefix="/api/cards", tags=["Cards"], dependencies=[Depends(get_current_user)])
 app.include_router(users_router, prefix="/api/users", tags=["Users"], dependencies=[Depends(get_current_user)])
+app.include_router(images_router, prefix="/api/images", tags=["Images"])
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)

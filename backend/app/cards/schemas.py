@@ -1,5 +1,7 @@
-from pydantic import BaseModel, Json
+import uuid
 from enum import Enum
+
+from pydantic import BaseModel, Json, HttpUrl
 
 
 class CardDataTypes(str, Enum):
@@ -46,7 +48,7 @@ class CardTemplateCreation(BaseModel):
     structure: Json
 
     class Config:
-        from_attributes=True
+        from_attributes = True
 
 
 class CardData(BaseModel):
@@ -54,7 +56,8 @@ class CardData(BaseModel):
     title: str | None = None
     subtitle: str | None = None
     description: str | None = None
-    image_url: str | None = None
+    image_url: HttpUrl | None = None
+    image_uuid: uuid.UUID | None = None
 
 
 class CardCategories(BaseModel):

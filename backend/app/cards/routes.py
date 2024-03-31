@@ -1,4 +1,5 @@
 import logging
+import uuid
 from pathlib import Path
 from typing import Annotated, Type
 
@@ -9,22 +10,20 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from cards.exceptions import (
     CardDataLengthNotMatch,
-    CardDataNotFound,
-    CardDataImageNotFound,
-    CardDataImageDoesNotExist,
+    ImageNotFound
 )
 from cards.schemas import Card, CreateCard, CardTemplateCreation, CardDataTypes, AddCardSuggestions
 from cards.templates_routes import templates_router
-from cards.utils import get_card_template_by_id, get_card_by_id, get_card_data_by_id
+from cards.utils import get_card_template_by_id, get_card_by_id, get_card_data_by_id, get_image_by_uuid
 from core.auth import get_current_user
-from database.models import Cards
+from database.models import Cards, Images
 from database.schemas import User
 from database.session import get_db
 
 cards_router = router = APIRouter()
 router.include_router(templates_router, prefix="/templates", dependencies=[Depends(get_current_user)])
 
-public_router = APIRouter()
+images_router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
@@ -53,20 +52,17 @@ async def create_card(
 
     for index, (card_data, template_structure) in enumerate(
             zip(input_data.card_nominations_data, card_template_schema.structure),
-            start=1
     ):
         card_nominations_to_database.append({
             "id": index,
-            "image": None,
             **card_data.dict(),
             **template_structure
         })
 
-    for index, card_data in enumerate(input_data.card_suggestions_data, start=1):
+    for index, card_data in enumerate(input_data.card_suggestions_data):
         card_suggestions_to_database.append({
             "id": index,
-            "image": None,
-            **card_data.dict(),
+            **card_data.model_dump(),
         })
 
     card_data_model = Cards(
@@ -106,7 +102,6 @@ async def add_suggestions_to_card(
     card.data["suggestions"].extend([
         {
             "id": index,
-            "image": None,
             **card_data.model_dump(),
         }
         for index, card_data
@@ -161,22 +156,33 @@ async def add_image_to_card(
 ) -> Response:
     card, card_data = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
-    # Check if this item has an image and delete it
+    # Clear previous image if exists
+    if card_data.get("image_uuid"):
+        image_data = get_image_by_uuid(card_data["image_uuid"], db)
+        image_path_obj = Path(image_data.path)
 
-    image_path: str | None = card_data.get("image", None)
+        if image_path_obj.exists():
+            image_path_obj.unlink()
 
-    if image_path and (image_path_obj := Path(image_path)).exists():
-        image_path_obj.unlink()
+        card_data["image_uuid"] = None
+        card_data["image_url"] = None
 
-    file_path = Path(f'/app/images/{card.id}/{data_id}_{image_file.filename}')
+        flag_modified(card, "data")
+        db.delete(image_data)
+        db.commit()
 
-    card_data["image_url"] = str(request.url)
-    card_data["image_path"] = file_path.as_posix()
+    # Create and update image data
 
-    # Create directory if it does not exist
+    image_uuid = uuid.uuid4()
+    file_path = Path(f'/app/images/{card.id}/{image_uuid}.{image_file.filename.split(".")[-1]}')
 
     if not file_path.parent.exists():
         file_path.parent.mkdir(parents=True)
+
+    image_url = f"{request.url.scheme}://{request.url.netloc}/api/images/{image_uuid}"
+
+    card_data["image_uuid"] = str(image_uuid)
+    card_data["image_url"] = image_url
 
     # Save image
 
@@ -186,34 +192,31 @@ async def add_image_to_card(
     finally:
         image_file.file.close()
 
-    # Save changes to database
+    # Create image object
 
+    image_model = Images(
+        id=image_uuid,
+        path=file_path.as_posix(),
+        url=image_url,
+        card_id=card.id
+    )
+
+    db.add(image_model)
     flag_modified(card, "data")
     db.commit()
 
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@public_router.get("/{card_id}/data/{data_id}/image")
+@images_router.get("/{image_uuid}")
 async def get_card_image(
-        card_id: int,
-        data_id: int,
-        card_data_type: Annotated[CardDataTypes, Query(...)],
+        image_uuid: uuid.UUID,
         db: Annotated[Session, Depends(get_db)],
 ) -> FileResponse:
-    _, card_data = get_card_data_by_id(card_id, data_id, card_data_type, db)
-
-    try:
-        image_path = card_data.get("image_path", None)
-    except IndexError:
-        raise CardDataNotFound(card_id, data_id)
-
-    if not image_path:
-        raise CardDataImageNotFound(card_id, data_id)
-
-    image_path_obj = Path(image_path)
+    image_data = get_image_by_uuid(image_uuid, db)
+    image_path_obj = Path(image_data.path)
 
     if not image_path_obj.exists():
-        raise CardDataImageDoesNotExist(card_id, data_id)
+        raise ImageNotFound(image_uuid)
 
     return FileResponse(image_path_obj)
