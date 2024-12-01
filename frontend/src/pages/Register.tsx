@@ -6,11 +6,11 @@ const Register = () => {
     const navigate = useNavigate();
     const registerForm = useUnit($registerForm);
 
-    const handleChange = (event) => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         changeRegisterFieldEvent({name: event.target.name, value: event.target.value});
     }
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event: React.ChangeEvent<HTMLFormElement>) => {
         event.preventDefault();
         registerEvent()
         navigate('/cards')

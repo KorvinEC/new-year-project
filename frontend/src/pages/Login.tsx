@@ -7,11 +7,11 @@ const Login = () => {
     const loginForm = useUnit($loginForm);
     const navigate = useNavigate();
 
-    const handleChange = (event) => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         changeLoginFieldEvent({name: event.target.name, value: event.target.value});
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event: React.ChangeEvent<HTMLFormElement>) => {
         event.preventDefault();
         signIn(loginForm);
         navigate('/cards')
