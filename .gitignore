@@ -2,7 +2,7 @@ venv
 http_requests
 *__pycache__/
 .idea
-./images/
+*images/
 .docker
 
 # Logs
