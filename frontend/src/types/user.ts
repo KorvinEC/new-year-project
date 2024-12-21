@@ -13,3 +13,8 @@ export interface RegisterType {
   username: string
   password: string
 }
+
+export type User = {
+  id: number
+  nickname: string
+}

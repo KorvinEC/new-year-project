@@ -11,19 +11,16 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as TemplatesImport } from './routes/templates'
 import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
+import { Route as CreateImport } from './routes/create'
 import { Route as CardsImport } from './routes/cards'
+import { Route as PathlessImport } from './routes/_pathless'
 import { Route as IndexImport } from './routes/index'
+import { Route as TemplatesIndexImport } from './routes/templates/index'
+import { Route as TemplatesCreateImport } from './routes/templates/create'
 
 // Create/Update Routes
-
-const TemplatesRoute = TemplatesImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const RegisterRoute = RegisterImport.update({
   id: '/register',
@@ -37,15 +34,38 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const CreateRoute = CreateImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const CardsRoute = CardsImport.update({
   id: '/cards',
   path: '/cards',
   getParentRoute: () => rootRoute,
 } as any)
 
+const PathlessRoute = PathlessImport.update({
+  id: '/_pathless',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TemplatesIndexRoute = TemplatesIndexImport.update({
+  id: '/templates/',
+  path: '/templates/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TemplatesCreateRoute = TemplatesCreateImport.update({
+  id: '/templates/create',
+  path: '/templates/create',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -60,11 +80,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/_pathless': {
+      id: '/_pathless'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PathlessImport
+      parentRoute: typeof rootRoute
+    }
     '/cards': {
       id: '/cards'
       path: '/cards'
       fullPath: '/cards'
       preLoaderRoute: typeof CardsImport
+      parentRoute: typeof rootRoute
+    }
+    '/create': {
+      id: '/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -81,11 +115,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
     }
-    '/templates': {
-      id: '/templates'
+    '/templates/create': {
+      id: '/templates/create'
+      path: '/templates/create'
+      fullPath: '/templates/create'
+      preLoaderRoute: typeof TemplatesCreateImport
+      parentRoute: typeof rootRoute
+    }
+    '/templates/': {
+      id: '/templates/'
       path: '/templates'
       fullPath: '/templates'
-      preLoaderRoute: typeof TemplatesImport
+      preLoaderRoute: typeof TemplatesIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -95,52 +136,92 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '': typeof PathlessRoute
   '/cards': typeof CardsRoute
+  '/create': typeof CreateRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/templates': typeof TemplatesRoute
+  '/templates/create': typeof TemplatesCreateRoute
+  '/templates': typeof TemplatesIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '': typeof PathlessRoute
   '/cards': typeof CardsRoute
+  '/create': typeof CreateRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/templates': typeof TemplatesRoute
+  '/templates/create': typeof TemplatesCreateRoute
+  '/templates': typeof TemplatesIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/_pathless': typeof PathlessRoute
   '/cards': typeof CardsRoute
+  '/create': typeof CreateRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/templates': typeof TemplatesRoute
+  '/templates/create': typeof TemplatesCreateRoute
+  '/templates/': typeof TemplatesIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cards' | '/login' | '/register' | '/templates'
+  fullPaths:
+    | '/'
+    | ''
+    | '/cards'
+    | '/create'
+    | '/login'
+    | '/register'
+    | '/templates/create'
+    | '/templates'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cards' | '/login' | '/register' | '/templates'
-  id: '__root__' | '/' | '/cards' | '/login' | '/register' | '/templates'
+  to:
+    | '/'
+    | ''
+    | '/cards'
+    | '/create'
+    | '/login'
+    | '/register'
+    | '/templates/create'
+    | '/templates'
+  id:
+    | '__root__'
+    | '/'
+    | '/_pathless'
+    | '/cards'
+    | '/create'
+    | '/login'
+    | '/register'
+    | '/templates/create'
+    | '/templates/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PathlessRoute: typeof PathlessRoute
   CardsRoute: typeof CardsRoute
+  CreateRoute: typeof CreateRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
-  TemplatesRoute: typeof TemplatesRoute
+  TemplatesCreateRoute: typeof TemplatesCreateRoute
+  TemplatesIndexRoute: typeof TemplatesIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PathlessRoute: PathlessRoute,
   CardsRoute: CardsRoute,
+  CreateRoute: CreateRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
-  TemplatesRoute: TemplatesRoute,
+  TemplatesCreateRoute: TemplatesCreateRoute,
+  TemplatesIndexRoute: TemplatesIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -154,17 +235,26 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/_pathless",
         "/cards",
+        "/create",
         "/login",
         "/register",
-        "/templates"
+        "/templates/create",
+        "/templates/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/_pathless": {
+      "filePath": "_pathless.tsx"
+    },
     "/cards": {
       "filePath": "cards.tsx"
+    },
+    "/create": {
+      "filePath": "create.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
@@ -172,8 +262,11 @@ export const routeTree = rootRoute
     "/register": {
       "filePath": "register.tsx"
     },
-    "/templates": {
-      "filePath": "templates.tsx"
+    "/templates/create": {
+      "filePath": "templates/create.tsx"
+    },
+    "/templates/": {
+      "filePath": "templates/index.tsx"
     }
   }
 }
