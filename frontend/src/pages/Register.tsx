@@ -5,7 +5,7 @@ export const Register = () => {
   const [ username, setUsername ] = useState("")
   const [ password, setPassword ] = useState("")
 
-  const registerMutation = useRegister()
+  const { registerMutation } = useRegister()
 
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault()
