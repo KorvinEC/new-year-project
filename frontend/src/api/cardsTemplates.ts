@@ -18,3 +18,12 @@ export const useCreateCardsTemplate = () => {
     return response.data
   }
 }
+
+export const useRemoveCardsTemplate = () => {
+  const axiosInstance = useAxiosInstance()
+
+  return async (templatesId: number) => {
+    const response = await axiosInstance.delete(`cards/templates/${templatesId}`)
+    return response.data
+  }
+}

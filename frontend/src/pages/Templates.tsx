@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import { useCardsTemplates } from "../hooks/useCards"
+import { useCardsTemplates } from "../hooks/useCardsTemplates"
 import { Link } from "@tanstack/react-router"
 
 const TemplateDiv = styled.div`
@@ -7,7 +7,7 @@ const TemplateDiv = styled.div`
 `
 
 const TemplatesList = () => {
-  const { useCardsTemplatesQuery } = useCardsTemplates()
+  const { useCardsTemplatesQuery, cardsTemplatesRemoveMutation } = useCardsTemplates()
 
   const { data, error, isPending } = useCardsTemplatesQuery()
 
@@ -19,28 +19,36 @@ const TemplatesList = () => {
     return <h1>Error: {JSON.stringify(error)}</h1>
   }
 
+  const handleRemoveTemplate = (templateId: number) => {
+    cardsTemplatesRemoveMutation.mutate(templateId)
+  }
+
   return <>
-    { data.map((cardTemplate, index) => 
-      <TemplateDiv key={index}>
-        { cardTemplate.structure.map((structure, index) => 
-          <div key={index}>
-            <p>Title: {structure.title}</p>
-            <p>Subtitle: {structure.subtitle}</p>
-          </div>
-        ) }
-      </TemplateDiv>
-    ) }
+    {
+      data.map(
+        cardTemplate =>
+          <TemplateDiv key={cardTemplate.id}>
+            {cardTemplate.structure.map((structure, index) =>
+              <div key={index}>
+                <p>Title: {structure.title}</p>
+                <p>Subtitle: {structure.subtitle}</p>
+              </div>
+            )}
+            <button type="submit" onClick={() => handleRemoveTemplate(cardTemplate.id)}>Remove</button>
+          </TemplateDiv>
+      )
+    }
   </>
 }
 
 export const Templates = () => {
   return <>
-    <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-      <h1 style={{display: "inline"}}>Templates</h1>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <h1 style={{ display: "inline" }}>Templates</h1>
       <Link to="/templates/create">
-        <h1 style={{display: "inline"}}>Create</h1>
+        <h1 style={{ display: "inline" }}>Create</h1>
       </Link>
     </div>
-    <TemplatesList/>
+    <TemplatesList />
   </>
 }
