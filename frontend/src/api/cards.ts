@@ -18,3 +18,12 @@ export const useSendCreateCard = () => {
     return response.data
   }
 }
+
+export const useRemoveCard = () => {
+  const axiosInstance = useAxiosInstance()
+
+  return async (cardId: number): Promise<CardType[]> => {
+    const response = await axiosInstance.delete(`cards/${cardId}`)
+    return response.data
+  }
+}

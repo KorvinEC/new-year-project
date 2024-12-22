@@ -1,5 +1,5 @@
 import { useCards } from "../hooks/useCards"
-import { CardFieldsType } from "../types/card"
+import { CardFieldsType, CardType } from "../types/card"
 import styled from "styled-components"
 
 const CardFieldsContainer = styled.div`
@@ -24,19 +24,22 @@ const CardContainer = styled.div`
   padding: 5px 10px 10px 10px;
 `
 
-const Card = (props: { nominations: CardFieldsType[], suggestions: CardFieldsType[] }) => {
-  const { nominations, suggestions } = props
+const Card = (props: { card: CardType }) => {
+  const { card } = props
+  const { nominations, suggestions } = card.data
+  const { removeCardMutation } = useCards()
 
   return <CardContainer>
-    <h1>Nominations:</h1>
+    <h2>Nominations:</h2>
     {nominations.map(field => <CardFields key={field.id} field={field} />)}
     {
       suggestions.length > 0 &&
       <div>
-        <h1>Suggestions:</h1>
+        <h2>Suggestions:</h2>
         {suggestions.map(field => <CardFields key={field.id} field={field} />)}
       </div>
     }
+    <button type="submit" onClick={() => removeCardMutation.mutate(props.card.id)}>Remove</button>
   </CardContainer>
 }
 
@@ -51,18 +54,16 @@ const CardsList = () => {
 
   if (isError) {
     return <>
-      <h1>Error:</h1>
+      <h2>Error:</h2>
       <p>{JSON.stringify(error)}</p>
     </>
   }
 
   return <>
     {
-      data.map(({ id, data }) => <Card
-        key={id}
-        nominations={data.nominations}
-        suggestions={data.suggestions}
-      />)
+      data.length > 0 
+      ? data.map(value => <Card key={value.id} card={value} />)
+      : <h2>No cards</h2>
     }
   </>
 }

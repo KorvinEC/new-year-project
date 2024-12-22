@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router"
 import { ChangeEvent } from "react"
 import { useCreateCard } from "../hooks/useCreateCard"
+import styled from "styled-components"
 
 interface NominationProps {
   index: number
@@ -9,10 +10,16 @@ interface NominationProps {
   description: string
 }
 
+const NominationContainer = styled.div`
+  border: 2px solid;
+  margin: 0px 0px 5px 0px;
+  padding: 5px 5px 5px 5px;
+`
+
 const Nomination = (props: { structure: NominationProps }) => {
   const { changeCreateCard } = useCreateCard()
 
-  return <div key={props.structure.index}>
+  return <NominationContainer>
     <p>Title: {props.structure.title}</p>
     <p>Subtitle: {props.structure.subtitle}</p>
     <label htmlFor="description">Description: </label>
@@ -27,25 +34,31 @@ const Nomination = (props: { structure: NominationProps }) => {
         event.target.value
       )}
     />
-  </div>
+  </NominationContainer>
 }
+
+const NominationsContainer = styled.div`
+  border: 2px solid;
+  margin: 0px 0px 5px 0px;
+  padding: 5px 5px 5px 5px;
+`
 
 const Nominations = () => {
   const { createCard } = useCreateCard()
 
-  return <>
-    <h2>Nominations</h2>
+  return <NominationsContainer>
+    <h2>Nominations:</h2>
     {
       createCard
-        ? createCard.card_nominations_data.map((value, index) => <Nomination structure={{ ...value, index }} />)
+        ? createCard.card_nominations_data.map((value, index) => <Nomination key={index} structure={{ ...value, index }} />)
         : <p>No items</p>
     }
-  </>
+  </NominationsContainer>
 }
 
 const Suggestions = () => {
   return <>
-    <h2>Suggestions</h2>
+    <h2>Suggestions:</h2>
   </>
 }
 
