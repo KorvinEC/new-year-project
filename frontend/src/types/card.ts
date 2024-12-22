@@ -10,7 +10,7 @@ export type CreateCardType = {
   card_suggestions_data: CreateCardFieldType[]
 }
 
-type CardFieldType = {
+export type CardFieldsType = {
   id: number
   title: string
   subtitle: string,
@@ -22,8 +22,8 @@ type CardFieldType = {
 export type CardType = {
   id: number,
   data: {
-    nominations: CardFieldType[]
-    suggestions: CardFieldType[]
+    nominations: CardFieldsType[]
+    suggestions: CardFieldsType[]
   }
 }
 

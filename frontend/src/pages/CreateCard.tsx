@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router"
 import { ChangeEvent } from "react"
 import { useCreateCard } from "../hooks/useCreateCard"
 
-
 interface NominationProps {
   index: number
   title: string
@@ -37,11 +36,9 @@ const Nominations = () => {
   return <>
     <h2>Nominations</h2>
     {
-      createCard ?
-        createCard.card_nominations_data.map((value, index) =>
-          <Nomination structure={{ ...value, index }} />
-        ) :
-        <p>No items</p>
+      createCard
+        ? createCard.card_nominations_data.map((value, index) => <Nomination structure={{ ...value, index }} />)
+        : <p>No items</p>
     }
   </>
 }
@@ -64,6 +61,7 @@ export const CreateCards = () => {
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault()
     createCardMutation.mutate(createCard)
+    navigate({ to: "/cards" })
   }
 
   return <>

@@ -3,9 +3,27 @@ import { useCardsTemplates } from "../hooks/useCardsTemplates"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useSetAtom } from "jotai"
 import { createCardAtom } from "../state/atoms"
+import { TemplateStructureType } from "../types/cardTemplate"
 
-const TemplateDiv = styled.div`
+const TemplateFieldsContainer = styled.div`
   border: 2px solid;
+  margin: 0px 0px 5px 0px;
+  padding: 5px 5px 5px 5px;
+`
+
+const TemplateFields = (props: { structure: TemplateStructureType }) => {
+  const { structure } = props
+
+  return <TemplateFieldsContainer>
+    <p>Title: {structure.title}</p>
+    <p>Subtitle: {structure.subtitle}</p>
+  </TemplateFieldsContainer>
+}
+
+const TemplateContainer = styled.div`
+  border: 2px solid;
+  margin: 0px 0px 10px 0px;
+  padding: 5px 10px 10px 10px;
 `
 
 const TemplatesList = () => {
@@ -39,7 +57,7 @@ const TemplatesList = () => {
     }
     setCreateAtom({
       card_template_id: item.id,
-      card_nominations_data: item.structure.map((structure => { return { ...structure, description: ""} })),
+      card_nominations_data: item.structure.map((structure => { return { ...structure, description: "" } })),
       card_suggestions_data: []
     })
     navigate({ to: "/cards/create" })
@@ -49,16 +67,11 @@ const TemplatesList = () => {
     {
       data.map(
         cardTemplate =>
-          <TemplateDiv key={cardTemplate.id}>
-            {cardTemplate.structure.map((structure, index) =>
-              <div key={index}>
-                <p>Title: {structure.title}</p>
-                <p>Subtitle: {structure.subtitle}</p>
-              </div>
-            )}
+          <TemplateContainer key={cardTemplate.id}>
+            {cardTemplate.structure.map((structure, index) => <TemplateFields key={index} structure={structure} />)}
             <button type="submit" onClick={() => handleRemoveTemplate(cardTemplate.id)}>Remove</button>
             <button type="submit" onClick={() => handleCreateTemplate(cardTemplate.id)}>Create Card</button>
-          </TemplateDiv>
+          </TemplateContainer>
       )
     }
   </>

@@ -1,6 +1,6 @@
 import { User } from "./user"
 
-export type TemplateStructure = {
+export type TemplateStructureType = {
   title: string
   subtitle: string
 }
