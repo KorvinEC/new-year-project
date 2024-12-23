@@ -8,13 +8,17 @@ const CardFieldsContainer = styled.div`
   padding: 5px 5px 5px 5px;
 `
 
+const TextField = styled.p`
+  margin: 0px 0px 0px 0px;
+`
+
 const CardFields = (props: { field: CardFieldsType }) => {
   const { field } = props
 
   return <CardFieldsContainer>
-    <p>Title: {field.title}</p>
-    <p>Subtitle: {field.subtitle}</p>
-    <p>Description: {field.description}</p>
+    <TextField>Title: {field.title}</TextField>
+    <TextField>Subtitle: {field.subtitle}</TextField>
+    <TextField>Description: {field.description}</TextField>
   </CardFieldsContainer>
 }
 
@@ -24,6 +28,12 @@ const CardContainer = styled.div`
   padding: 5px 10px 10px 10px;
 `
 
+const CardListContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+`
+
 const Card = (props: { card: CardType }) => {
   const { card } = props
   const { nominations, suggestions } = card.data
@@ -31,12 +41,16 @@ const Card = (props: { card: CardType }) => {
 
   return <CardContainer>
     <h2>Nominations:</h2>
-    {nominations.map(field => <CardFields key={field.id} field={field} />)}
+    <CardListContainer>
+      {nominations.map(field => <CardFields key={field.id} field={field} />)}
+    </CardListContainer>
     {
       suggestions.length > 0 &&
       <div>
         <h2>Suggestions:</h2>
-        {suggestions.map(field => <CardFields key={field.id} field={field} />)}
+        <CardListContainer>
+          {suggestions.map(field => <CardFields key={field.id} field={field} />)}
+        </CardListContainer>
       </div>
     }
     <button type="submit" onClick={() => removeCardMutation.mutate(props.card.id)}>Remove</button>
@@ -61,9 +75,9 @@ const CardsList = () => {
 
   return <>
     {
-      data.length > 0 
-      ? data.map(value => <Card key={value.id} card={value} />)
-      : <h2>No cards</h2>
+      data.length > 0
+        ? data.map(value => <Card key={value.id} card={value} />)
+        : <h2>No cards</h2>
     }
   </>
 }
