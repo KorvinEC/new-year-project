@@ -11,12 +11,16 @@ const TemplateFieldsContainer = styled.div`
   padding: 5px 5px 5px 5px;
 `
 
+const TextField = styled.p`
+  margin: 0px 0px 0px 0px;
+`
+
 const TemplateFields = (props: { structure: TemplateStructureType }) => {
   const { structure } = props
 
   return <TemplateFieldsContainer>
-    <p>Title: {structure.title}</p>
-    <p>Subtitle: {structure.subtitle}</p>
+    <TextField>Title: {structure.title}</TextField>
+    <TextField>Subtitle: {structure.subtitle}</TextField>
   </TemplateFieldsContainer>
 }
 
@@ -24,6 +28,12 @@ const TemplateContainer = styled.div`
   border: 2px solid;
   margin: 0px 0px 10px 0px;
   padding: 5px 10px 10px 10px;
+`
+
+const TemplateListContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 `
 
 const TemplatesList = () => {
@@ -68,7 +78,9 @@ const TemplatesList = () => {
       data.map(
         cardTemplate =>
           <TemplateContainer key={cardTemplate.id}>
-            {cardTemplate.structure.map((structure, index) => <TemplateFields key={index} structure={structure} />)}
+            <TemplateListContainer>
+              {cardTemplate.structure.map((structure, index) => <TemplateFields key={index} structure={structure} />)}
+            </TemplateListContainer>
             <button type="submit" onClick={() => handleRemoveTemplate(cardTemplate.id)}>Remove</button>
             <button type="submit" onClick={() => handleCreateTemplate(cardTemplate.id)}>Create Card</button>
           </TemplateContainer>
