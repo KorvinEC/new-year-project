@@ -12,6 +12,23 @@ export const useCreateCard = () => {
   const [createCard, setCreateCardAtom] = useAtom(createCardAtom)
   const fetchCardsTemplates = useSendCreateCard()
 
+  const addSuggestionField = () => {
+    if (!createCard) { return }
+    const newCreateCard: CreateCardType = { ...createCard }
+    newCreateCard.card_suggestions_data = [
+      ...newCreateCard.card_suggestions_data,
+      { "title": "", "subtitle": "", "description": "" }
+    ]
+    setCreateCardAtom(newCreateCard)
+  }
+
+  const removeSuggestionField = (removeIndex: number) => {
+    if (!createCard) { return }
+    const newCreateCard: CreateCardType = { ...createCard }
+    newCreateCard.card_suggestions_data = newCreateCard.card_suggestions_data.filter((_, index) => (index !== removeIndex))
+    setCreateCardAtom(newCreateCard)
+  }
+
   const queryClient = useQueryClient()
 
   const createCardMutation = useMutation({
@@ -39,5 +56,7 @@ export const useCreateCard = () => {
     setCreateCardAtom,
     createCardMutation,
     changeCreateCard,
+    addSuggestionField,
+    removeSuggestionField,
   }
 }

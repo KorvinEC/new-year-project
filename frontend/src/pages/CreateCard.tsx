@@ -3,63 +3,137 @@ import { ChangeEvent } from "react"
 import { useCreateCard } from "../hooks/useCreateCard"
 import styled from "styled-components"
 
-interface NominationProps {
+interface FieldProps {
   index: number
   title: string
   subtitle: string
   description: string
 }
 
-const NominationContainer = styled.div`
+const CardFieldContainer = styled.div`
   border: 2px solid;
   margin: 0px 0px 5px 0px;
   padding: 5px 5px 5px 5px;
 `
 
-const Nomination = (props: { structure: NominationProps }) => {
+const Nomination = (props: { structure: FieldProps }) => {
   const { changeCreateCard } = useCreateCard()
 
-  return <NominationContainer>
-    <p>Title: {props.structure.title}</p>
-    <p>Subtitle: {props.structure.subtitle}</p>
-    <label htmlFor="description">Description: </label>
-    <input
-      type="description"
-      name="description"
-      value={props.structure.description}
-      onChange={event => changeCreateCard(
-        "card_nominations_data",
-        props.structure.index,
-        "description",
-        event.target.value
-      )}
-    />
-  </NominationContainer>
+  return <CardFieldContainer>
+    <div style={{ display: "flex" }}>
+      <p style={{ margin: "0px 0px 0px 0px" }}>title: {props.structure.title}</p>
+    </div>
+    <div style={{ display: "flex" }}>
+      <p style={{ margin: "0px 0px 0px 0px" }}>subtitle: {props.structure.subtitle}</p>
+    </div>
+    <div style={{ display: "flex" }}>
+      <label htmlFor="description">Description: </label>
+      <input
+        type="description"
+        name="description"
+        value={props.structure.description}
+        onChange={event => changeCreateCard(
+          "card_nominations_data",
+          props.structure.index,
+          "description",
+          event.target.value
+        )}
+      />
+    </div>
+  </CardFieldContainer>
 }
 
-const NominationsContainer = styled.div`
+const Suggestion = (props: { structure: FieldProps }) => {
+  const { changeCreateCard, removeSuggestionField } = useCreateCard()
+
+  return <CardFieldContainer>
+    <div style={{ display: "flex" }}>
+      <label htmlFor="title">title: </label>
+      <input
+        type="text"
+        name="title"
+        value={props.structure.title}
+        onChange={event => changeCreateCard(
+          "card_suggestions_data",
+          props.structure.index,
+          "title",
+          event.target.value
+        )}
+      />
+    </div>
+    <div style={{ display: "flex" }}>
+      <label htmlFor="subtitle">subtitle: </label>
+      <input
+        type="text"
+        name="subtitle"
+        value={props.structure.subtitle}
+        onChange={event => changeCreateCard(
+          "card_suggestions_data",
+          props.structure.index,
+          "subtitle",
+          event.target.value
+        )}
+      />
+    </div>
+    <div style={{ display: "flex" }}>
+      <label htmlFor="description">Description: </label>
+      <input
+        type="text"
+        name="description"
+        value={props.structure.description}
+        onChange={event => changeCreateCard(
+          "card_suggestions_data",
+          props.structure.index,
+          "description",
+          event.target.value
+        )}
+      />
+    </div>
+    <button type="button" onClick={() => removeSuggestionField(props.structure.index)}>Remove</button>
+  </CardFieldContainer>
+}
+
+const FieldContainer = styled.div`
   border: 2px solid;
   margin: 0px 0px 5px 0px;
   padding: 5px 5px 5px 5px;
+`
+
+const FieldListContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 `
 
 const Nominations = () => {
   const { createCard } = useCreateCard()
 
-  return <NominationsContainer>
+  return <FieldContainer>
     <h2>Nominations:</h2>
-    {
-      createCard
-        ? createCard.card_nominations_data.map((value, index) => <Nomination key={index} structure={{ ...value, index }} />)
-        : <p>No items</p>
-    }
-  </NominationsContainer>
+    <FieldListContainer>
+      {
+        createCard
+          ? createCard.card_nominations_data.map((value, index) => <Nomination key={index} structure={{ ...value, index }} />)
+          : <p>No items</p>
+      }
+    </FieldListContainer>
+  </FieldContainer>
 }
 
 const Suggestions = () => {
-  return <>
+  const { createCard, addSuggestionField } = useCreateCard()
+
+  return <FieldContainer>
     <h2>Suggestions:</h2>
-  </>
+    <FieldListContainer>
+      {
+        createCard
+          ? createCard.card_suggestions_data.map((value, index) => <Suggestion key={index} structure={{ ...value, index }} />)
+          : <p>No items</p>
+      }
+    </FieldListContainer>
+    <button type="button" onClick={addSuggestionField}>Add</button>
+  </FieldContainer>
 }
 
 export const CreateCards = () => {

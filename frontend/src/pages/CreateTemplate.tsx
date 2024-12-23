@@ -58,7 +58,7 @@ const CreateTemplateForm = () => {
         )
       }
       <button type="button" onClick={addTemplateField}>Add</button>
-      <br/>
+      <br />
       <button type="submit">
         {createCardsTemplateMutation.isPending ? "Submiting ..." : "Submit"}
       </button>
