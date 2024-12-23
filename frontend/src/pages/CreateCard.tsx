@@ -17,17 +17,29 @@ const CardFieldContainer = styled.div`
 `
 
 const Nomination = (props: { structure: FieldProps }) => {
-  const { changeCreateCard } = useCreateCard()
+  const { changeCreateCard, addImageToCard } = useCreateCard()
+
+  const handleImageFile = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files?.length != 1) { return }
+    addImageToCard(index, "nominations", event.target.files[0])
+  }
 
   return <CardFieldContainer>
     <div style={{ display: "flex" }}>
       <p style={{ margin: "0px 0px 0px 0px" }}>title: {props.structure.title}</p>
     </div>
     <div style={{ display: "flex" }}>
+      <input 
+        type="file"
+        datatype="image"
+        onChange={(e) => handleImageFile(props.structure.index, e)}
+      />
+    </div>
+    <div style={{ display: "flex" }}>
       <p style={{ margin: "0px 0px 0px 0px" }}>subtitle: {props.structure.subtitle}</p>
     </div>
     <div style={{ display: "flex" }}>
-      <label htmlFor="description">Description: </label>
+      <label htmlFor="description">description: </label>
       <input
         type="description"
         name="description"
@@ -44,7 +56,12 @@ const Nomination = (props: { structure: FieldProps }) => {
 }
 
 const Suggestion = (props: { structure: FieldProps }) => {
-  const { changeCreateCard, removeSuggestionField } = useCreateCard()
+  const { changeCreateCard, removeSuggestionField, addImageToCard } = useCreateCard()
+
+  const handleImageFile = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files?.length != 1) { return }
+    addImageToCard(index, "suggestions", event.target.files[0])
+  }
 
   return <CardFieldContainer>
     <div style={{ display: "flex" }}>
@@ -62,6 +79,13 @@ const Suggestion = (props: { structure: FieldProps }) => {
       />
     </div>
     <div style={{ display: "flex" }}>
+      <input 
+        type="file"
+        datatype="image"
+        onChange={(e) => handleImageFile(props.structure.index, e)}
+      />
+    </div>
+    <div style={{ display: "flex" }}>
       <label htmlFor="subtitle">subtitle: </label>
       <input
         type="text"
@@ -76,7 +100,7 @@ const Suggestion = (props: { structure: FieldProps }) => {
       />
     </div>
     <div style={{ display: "flex" }}>
-      <label htmlFor="description">Description: </label>
+      <label htmlFor="description">description: </label>
       <input
         type="text"
         name="description"
@@ -140,15 +164,19 @@ export const CreateCards = () => {
   const navigate = useNavigate({ from: "/cards/create" })
   const { createCard, createCardMutation } = useCreateCard()
 
-  if (!createCard) {
+  if (createCardMutation.isSuccess) {
+    console.log("createCardMutation.isSuccess");
+    navigate({ to: "/cards" })
+  }
+
+  if (!createCard && createCardMutation.isIdle) {
+    console.log("/templates");
     navigate({ to: "/templates" })
-    return
   }
 
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault()
-    createCardMutation.mutate(createCard)
-    navigate({ to: "/cards" })
+    createCardMutation.mutate()
   }
 
   return <>

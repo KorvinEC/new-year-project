@@ -37,6 +37,21 @@ type SuggestionType = {
   description: string
 }
 
+export type CardDataFieldType = "nominations" | "suggestions"
+
+export type ImageToAddType = {
+  index: number
+  card_data_type: CardDataFieldType
+  image_file: File
+}
+
+export type AddImageToCardApiType = {
+  card_id: number
+  data_id: number
+  card_data_type: CardDataFieldType
+  image_file: File
+}
+
 export type CreateCardApiType = {
   card_template_id: number
   card_nominations_data: NominationType[]

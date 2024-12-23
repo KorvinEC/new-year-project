@@ -7,6 +7,6 @@ export type TemplateStructureType = {
 
 export type CardTemplate = {
   id: number
-  structure: TemplateStructure[]
+  structure: TemplateStructureType[]
   user: User
 }
