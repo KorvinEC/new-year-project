@@ -17,6 +17,10 @@ const CardFields = (props: { field: CardFieldsType }) => {
 
   return <CardFieldsContainer>
     <TextField>Title: {field.title}</TextField>
+    {
+      field.image_url &&
+      <img src={field.image_url} style={{ width: "100%" }} />
+    }
     <TextField>Subtitle: {field.subtitle}</TextField>
     <TextField>Description: {field.description}</TextField>
   </CardFieldsContainer>
