@@ -4,14 +4,20 @@ from uuid import UUID
 import sqlalchemy
 from sqlalchemy.orm import Session
 
-from cards.exceptions import CardTemplateNotFound, CardNotFound, CardDataNotFound, CardDataTypeNotFound, ImageNotFound
+from cards.exceptions import (
+    CardTemplateNotFound,
+    CardNotFound,
+    CardDataNotFound,
+    CardDataTypeNotFound,
+    ImageNotFound,
+)
 from cards.schemas import CardDataTypes
 from database.models import Templates, Cards, Images
 
 
 def get_card_template_by_id(
-        template_id: int,
-        db: Session,
+    template_id: int,
+    db: Session,
 ) -> Type[Templates]:
     try:
         return db.query(Templates).filter(Templates.id == template_id).one()
@@ -20,8 +26,8 @@ def get_card_template_by_id(
 
 
 def get_card_by_id(
-        card_id: int,
-        db: Session,
+    card_id: int,
+    db: Session,
 ) -> Type[Cards]:
     try:
         return db.query(Cards).filter(Cards.id == card_id).one()
@@ -30,15 +36,17 @@ def get_card_by_id(
 
 
 def get_card_data_by_id(
-        card_id: int,
-        data_id: int,
-        card_data_type: CardDataTypes,
-        db: Session,
+    card_id: int,
+    data_id: int,
+    card_data_type: CardDataTypes,
+    db: Session,
 ) -> (Type[Cards], dict):
     card = get_card_by_id(card_id, db)
 
     try:
-        return card, [item for item in card.data[card_data_type.name] if item["id"] == data_id][0]
+        return card, [
+            item for item in card.data[card_data_type.name] if item["id"] == data_id
+        ][0]
     except KeyError:
         raise CardDataTypeNotFound(card_id, card_data_type)
     except IndexError:
@@ -46,8 +54,8 @@ def get_card_data_by_id(
 
 
 def get_image_by_uuid(
-        uuid: UUID,
-        db: Session,
+    uuid: UUID,
+    db: Session,
 ) -> Type[Images]:
     try:
         return db.query(Images).filter(Images.id == uuid).one()
