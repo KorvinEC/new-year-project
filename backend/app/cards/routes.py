@@ -1,7 +1,7 @@
 import logging
 import uuid
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Type
 
 from fastapi import APIRouter, Depends, UploadFile, status, Request, Query
 from fastapi.responses import FileResponse, Response
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 @router.get("/", response_model=list[Card])
 async def get_cards(
     db: Annotated[Session, Depends(get_db)],
-) -> list[type[Cards]]:
+) -> list[Type[Cards]]:
     return db.query(Cards).order_by(Cards.id.desc()).all()
 
 

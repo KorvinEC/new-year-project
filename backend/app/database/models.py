@@ -18,7 +18,8 @@ class Users(Base):
 
     templates: Mapped[list["Templates"]] = relationship("Templates", back_populates="user",
                                                         cascade="all, delete-orphan")
-
+    cards: Mapped[list["Cards"]] = relationship("Cards", back_populates="user",
+                                                        cascade="all, delete-orphan")
 
 class Templates(Base):
     __tablename__ = "templates"
@@ -42,6 +43,7 @@ class Cards(Base):
     template: Mapped[Templates] = relationship("Templates", back_populates="cards")
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user: Mapped[Users] = relationship("Users", back_populates="cards")
 
     images: Mapped[list["Images"]] = relationship("Images", back_populates="card", cascade="all, delete-orphan")
 

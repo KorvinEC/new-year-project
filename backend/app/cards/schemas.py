@@ -11,6 +11,7 @@ class CardDataTypes(str, Enum):
 
 # Card templates schemas
 
+
 class CardTemplateStruct(BaseModel):
     title: str
     subtitle: str | None
@@ -68,6 +69,7 @@ class CardCategories(BaseModel):
 class Card(BaseModel):
     id: int
     data: CardCategories
+    user: User
 
 
 class CreateNominationData(BaseModel):
