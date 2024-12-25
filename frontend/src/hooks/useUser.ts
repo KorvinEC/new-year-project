@@ -1,28 +1,44 @@
 import { useAtom } from "jotai"
 import { tokenAtom, userAtom } from "../state/atoms"
-import { useLoginUser } from "../api/user"
-import { useMutation } from "@tanstack/react-query"
+import { useAuthenticationApi } from "../api/authentication"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { TokenType } from "../types/user"
+import { RESET } from "jotai/utils"
+import { useUserApi } from "../api/user"
 
 export const useUser = () => {
-  const loginUser = useLoginUser();
+  const { login } = useAuthenticationApi()
+  const { fetchMe } = useUserApi()
 
-  const [ user, setUser ] = useAtom(userAtom)
-  const [ token, setToken ] = useAtom(tokenAtom)
+  const [user, setUser] = useAtom(userAtom)
+  const [token, setToken] = useAtom(tokenAtom)
 
   const loginMutation = useMutation({
-      mutationFn: loginUser,
-      onError: (error) => {
-        console.log("useLogin onError", error);
-      },
-      onSuccess(data: TokenType) {
-        console.log("useLogin onSuccess", data)
-        setToken(data.access_token)
-      },
-    })
+    mutationFn: login,
+    onSuccess(data: TokenType) {
+      setToken(data.access_token)
+    },
+  })
 
   const logout = () => {
-    setUser(null)
+    setUser(RESET)
+  }
+
+  const fetchMeQuery = useQuery({
+    queryKey: ["user"],
+    queryFn: fetchMe,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    initialData: token,
+    enabled: !!token
+  })
+
+  const isAuthenticated = (): boolean => {
+    if (fetchMeQuery.isError) {
+      setToken(RESET)
+    }
+    return !!fetchMeQuery.data
   }
 
   return {
@@ -32,5 +48,6 @@ export const useUser = () => {
     setToken,
     loginMutation,
     logout,
+    isAuthenticated,
   }
 }

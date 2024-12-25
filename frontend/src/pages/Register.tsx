@@ -9,7 +9,6 @@ export const Register = () => {
 
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log("In register");
     registerMutation.mutate({nickname: username, username, password})
   }
   

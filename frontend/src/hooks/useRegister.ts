@@ -1,16 +1,16 @@
 import { useMutation } from "@tanstack/react-query"
-import { useRegisterUser } from "../api/user"
+import { useAuthenticationApi } from "../api/authentication"
 import { TokenType } from "../types/user";
 import { useAtom } from "jotai";
 import { tokenAtom } from "../state/atoms";
 
 export const useRegister = () => {
-  const registerUser = useRegisterUser()
+  const { regitser } = useAuthenticationApi()
 
   const [ token, setToken ] = useAtom(tokenAtom)
 
   const registerMutation = useMutation({
-    mutationFn: registerUser,
+    mutationFn: regitser,
     onError: (error) => {
       console.log("useRegister Error", error);
     },

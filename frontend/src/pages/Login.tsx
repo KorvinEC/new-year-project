@@ -9,7 +9,6 @@ export const Login = () => {
 
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log("In login");
     loginMutation.mutate({ username, password })
   }
 
