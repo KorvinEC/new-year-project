@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from datetime import timedelta
 from sqlalchemy.orm import Session
 
@@ -14,8 +14,8 @@ auth_router = router = APIRouter()
 
 @router.post("/token")
 async def login(
-        db: Annotated[Session, Depends(get_db)],
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    db: Annotated[Session, Depends(get_db)],
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
     user = authenticate_user(db, form_data.username, form_data.password)
 
@@ -26,9 +26,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(
-        minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
+    access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
         data={"sub": user.username},
         expires_delta=access_token_expires,
@@ -39,10 +37,12 @@ async def login(
 
 @router.post("/signup")
 async def signup(
-        db: Annotated[Session, Depends(get_db)],
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    nickname: Annotated[str, Form()],
+    username: Annotated[str, Form()],
+    password: Annotated[str, Form()],
+    db: Annotated[Session, Depends(get_db)],
 ):
-    user = sign_up_new_user(db, form_data.username, form_data.password, form_data.username)
+    user = sign_up_new_user(db, username, password, nickname)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -50,9 +50,7 @@ async def signup(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(
-        minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
+    access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
         data={"sub": user.username},
         expires_delta=access_token_expires,

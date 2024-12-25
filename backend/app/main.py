@@ -12,15 +12,9 @@ from core.auth import get_current_user
 from database.session import SessionLocal, create_tables
 from users.routes import users_router
 
-app = FastAPI(
-    title=config.PROJECT_NAME,
-    docs_url="/api/docs",
-    openapi_url="/api"
-)
+app = FastAPI(title=config.PROJECT_NAME, docs_url="/api/docs", openapi_url="/api")
 
-origins = [
-    "*"
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,9 +29,7 @@ def setup_logger():
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(levelname)-10s%(name)s - %(message)s",
-        handlers=[
-            logging.StreamHandler()
-        ]
+        handlers=[logging.StreamHandler()],
     )
     return logging.getLogger(__name__)
 
@@ -62,8 +54,18 @@ async def root():
 
 
 app.include_router(auth_router, prefix="/api/authentication", tags=["Authentication"])
-app.include_router(cards_router, prefix="/api/cards", tags=["Cards"], dependencies=[Depends(get_current_user)])
-app.include_router(users_router, prefix="/api/users", tags=["Users"], dependencies=[Depends(get_current_user)])
+app.include_router(
+    cards_router,
+    prefix="/api/cards",
+    tags=["Cards"],
+    dependencies=[Depends(get_current_user)],
+)
+app.include_router(
+    users_router,
+    prefix="/api/users",
+    tags=["Users"],
+    dependencies=[Depends(get_current_user)],
+)
 app.include_router(images_router, prefix="/api/images", tags=["Images"])
 
 if __name__ == "__main__":
