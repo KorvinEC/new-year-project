@@ -20,6 +20,7 @@ export const useAuthenticationApi = () => {
   const regitser = async (registerData: RegisterType) => {
     const formData = new FormData
 
+    formData.append("nickname", registerData.nickname)
     formData.append("username", registerData.username)
     formData.append("password", registerData.password)
 

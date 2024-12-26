@@ -1,11 +1,18 @@
+import { useNavigate } from "@tanstack/react-router"
 import { ChangeEvent, useState } from "react";
 import { useUser } from "../hooks/useUser";
 
 export const Login = () => {
+  const navigate = useNavigate({ from: "/login" })
+
   const [ username, setUsername ] = useState("")
   const [ password, setPassword ] = useState("")
 
   const { loginMutation } = useUser()
+
+  if (loginMutation.isSuccess) {
+    navigate({ to: "/" })
+  }
 
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault()

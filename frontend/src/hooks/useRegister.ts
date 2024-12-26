@@ -11,11 +11,7 @@ export const useRegister = () => {
 
   const registerMutation = useMutation({
     mutationFn: regitser,
-    onError: (error) => {
-      console.log("useRegister Error", error);
-    },
     onSuccess(data: TokenType) {
-      console.log("useRegister onSuccess", data);
       setToken(data.access_token)
     },
   })
