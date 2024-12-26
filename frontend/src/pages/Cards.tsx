@@ -2,6 +2,33 @@ import { useCards } from "../hooks/useCards"
 import { CardFieldsType, CardType } from "../types/card"
 import styled from "styled-components"
 
+const UserContainerStyle = styled.div`
+  border: 2px solid;
+  padding: 5px 5px 5px 5px;
+  margin: 0px 0px 5px 0px;
+
+  .no-margin {
+    margin: 0px 0px 0px 0px;
+  }
+
+  .icon-image {
+    display: inline-block;
+    width: 64px;
+    height: 64px;
+  }
+`
+
+const UserContainer = ({ user }: { user: User }) => {
+  return <UserContainerStyle>
+    {
+      user.image &&
+      <img src={user.image.url} alt="Users icon" className="icon-image" />
+    }
+    <span className="no-margin"> User: {user.nickname}</span>
+  </UserContainerStyle>
+}
+
+
 const CardFieldsContainer = styled.div`
   border: 2px solid;
   margin: 0px 0px 5px 0px;
@@ -44,6 +71,7 @@ const Card = (props: { card: CardType }) => {
   const { removeCardMutation } = useCards()
 
   return <CardContainer>
+    <UserContainer user={card.user} />
     <h2>Nominations:</h2>
     <CardListContainer>
       {nominations.map(field => <CardFields key={field.id} field={field} />)}

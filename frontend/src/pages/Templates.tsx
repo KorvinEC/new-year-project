@@ -4,6 +4,33 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import { useSetAtom } from "jotai"
 import { createCardAtom } from "../state/atoms"
 import { TemplateStructureType } from "../types/cardTemplate"
+import { User } from "../types/user"
+
+const UserContainerStyle = styled.div`
+  border: 2px solid;
+  padding: 5px 5px 5px 5px;
+  margin: 0px 0px 5px 0px;
+
+  .no-margin {
+    margin: 0px 0px 0px 0px;
+  }
+
+  .icon-image {
+    display: inline-block;
+    width: 64px;
+    height: 64px;
+  }
+`
+
+const UserContainer = ({ user }: { user: User }) => {
+  return <UserContainerStyle>
+    {
+      user.image &&
+      <img src={user.image.url} alt="Users icon" className="icon-image" />
+    }
+    <span className="no-margin"> User: {user.nickname}</span>
+  </UserContainerStyle>
+}
 
 const TemplateFieldsContainer = styled.div`
   border: 2px solid;
@@ -15,8 +42,7 @@ const TextField = styled.p`
   margin: 0px 0px 0px 0px;
 `
 
-const TemplateFields = (props: { structure: TemplateStructureType }) => {
-  const { structure } = props
+const TemplateFields = ({ structure }: { structure: TemplateStructureType }) => {
 
   return <TemplateFieldsContainer>
     <TextField>Title: {structure.title}</TextField>
@@ -78,6 +104,7 @@ const TemplatesList = () => {
       data.map(
         cardTemplate =>
           <TemplateContainer key={cardTemplate.id}>
+            <UserContainer user={cardTemplate.user} />
             <TemplateListContainer>
               {cardTemplate.structure.map((structure, index) => <TemplateFields key={index} structure={structure} />)}
             </TemplateListContainer>

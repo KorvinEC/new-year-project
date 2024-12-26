@@ -14,7 +14,13 @@ export interface RegisterType {
   password: string
 }
 
+type Image = {
+  url: string
+  id: number
+}
+
 export type User = {
   id: number
   nickname: string
+  image: Image
 }
