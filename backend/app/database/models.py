@@ -22,6 +22,9 @@ class Users(Base):
     cards: Mapped[list["Cards"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    image: Mapped["UserImage"] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Templates(Base):
@@ -66,3 +69,16 @@ class Images(Base):
 
     card_id: Mapped[int] = mapped_column(ForeignKey("cards.id"), nullable=False)
     card: Mapped[Cards] = relationship(back_populates="images")
+
+
+class UserImage(Base):
+    __tablename__ = "user_image"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("(gen_random_uuid())")
+    )
+    path: Mapped[str] = mapped_column(nullable=False)
+    url: Mapped[str] = mapped_column(nullable=False)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user: Mapped[Users] = relationship(back_populates="image", single_parent=True)

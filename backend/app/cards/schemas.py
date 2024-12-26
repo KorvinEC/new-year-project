@@ -1,5 +1,6 @@
 import uuid
 from enum import Enum
+from users.schemas import User
 
 from pydantic import BaseModel, Json, HttpUrl
 
@@ -22,14 +23,6 @@ class CardTemplateStruct(BaseModel):
 
 class CardTemplateTitles(BaseModel):
     structure: list[CardTemplateStruct]
-
-
-class User(BaseModel):
-    id: int
-    nickname: str
-
-    class Config:
-        from_attributes = True
 
 
 class CardTemplate(BaseModel):

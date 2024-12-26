@@ -25,8 +25,13 @@ class UserEdit(UserBase):
         from_attributes = True
 
 
+class Image(BaseModel):
+    id: int
+
+
 class User(UserBase):
     id: int
+    image: Image
 
     class Config:
         from_attributes = True

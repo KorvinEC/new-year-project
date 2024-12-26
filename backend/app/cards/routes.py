@@ -24,7 +24,7 @@ from cards.utils import (
     get_image_by_uuid,
 )
 from core.auth import get_current_user
-from database.models import Cards, Images
+from database.models import Cards, Images, UserImage
 from database.schemas import User
 from database.session import get_db
 
@@ -172,7 +172,7 @@ async def add_image_to_card(
     card, card_data = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
     # Clear previous image if exists
-    if card_data.get("image_uuid"):
+    if card_data.get("image_uuid", None):
         image_data = get_image_by_uuid(card_data["image_uuid"], db)
         image_path_obj = Path(image_data.path)
 
@@ -190,13 +190,13 @@ async def add_image_to_card(
 
     image_uuid = uuid.uuid4()
     file_path = Path(
-        f'/app/images/{card.id}/{image_uuid}.{image_file.filename.split(".")[-1]}'
+        f'/app/images/cards/{card.id}/{image_uuid}{Path(image_file.filename or "tempname").suffix}'
     )
 
     if not file_path.parent.exists():
         file_path.parent.mkdir(parents=True)
 
-    image_url = f"{request.url.scheme}://{request.url.netloc}/api/images/{image_uuid}"
+    image_url = f"{request.url.scheme}://{request.url.netloc}/api/images/cards/{image_uuid}"
 
     card_data["image_uuid"] = str(image_uuid)
     card_data["image_url"] = image_url
@@ -222,12 +222,28 @@ async def add_image_to_card(
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@images_router.get("/{image_uuid}")
+@images_router.get("/cards/{image_uuid}")
 async def get_card_image(
     image_uuid: uuid.UUID,
     db: Annotated[Session, Depends(get_db)],
 ) -> FileResponse:
-    image_data = get_image_by_uuid(image_uuid, db)
+    image_data = get_image_by_uuid(image_uuid, db, Images)
+    logger.debug(image_data)
+    image_path_obj = Path(image_data.path)
+
+    if not image_path_obj.exists():
+        raise ImageNotFound(image_uuid)
+
+    return FileResponse(image_path_obj)
+
+
+@images_router.get("/users/{image_uuid}")
+async def get_user_image(
+    image_uuid: uuid.UUID,
+    db: Annotated[Session, Depends(get_db)],
+) -> FileResponse:
+    image_data = get_image_by_uuid(image_uuid, db, UserImage)
+    logger.debug(image_data)
     image_path_obj = Path(image_data.path)
 
     if not image_path_obj.exists():

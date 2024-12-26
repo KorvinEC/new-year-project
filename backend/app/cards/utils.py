@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, TypeVar
 from uuid import UUID
 
 import sqlalchemy
@@ -12,7 +12,7 @@ from cards.exceptions import (
     ImageNotFound,
 )
 from cards.schemas import CardDataTypes
-from database.models import Templates, Cards, Images
+from database.models import Templates, Cards, Images, UserImage
 
 
 def get_card_template_by_id(
@@ -53,11 +53,15 @@ def get_card_data_by_id(
         raise CardDataNotFound(card_id, data_id, card_data_type)
 
 
+T = TypeVar("T", Images, UserImage)
+
+
 def get_image_by_uuid(
     uuid: UUID,
     db: Session,
-) -> Type[Images]:
+    image_class: T,
+) -> T:
     try:
-        return db.query(Images).filter(Images.id == uuid).one()
+        return db.query(image_class).filter(image_class.id == uuid).one()
     except sqlalchemy.orm.exc.NoResultFound:
         raise ImageNotFound(uuid)
