@@ -48,11 +48,6 @@ def on_startup():
     create_tables()
 
 
-@app.get("/api")
-async def root():
-    return {"message": "Hello World"}
-
-
 app.include_router(auth_router, prefix="/api/authentication", tags=["Authentication"])
 app.include_router(
     cards_router,
