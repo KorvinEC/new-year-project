@@ -1,7 +1,9 @@
+from collections.abc import Awaitable, Callable
+from contextlib import asynccontextmanager
 import logging
 
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
@@ -12,7 +14,20 @@ from core.auth import get_current_user
 from database.session import SessionLocal, create_tables
 from users.routes import users_router
 
-app = FastAPI(title=config.PROJECT_NAME, docs_url="/api/docs", openapi_url="/api")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _ = setup_logger()
+    create_tables()
+    yield
+
+
+app = FastAPI(
+    title=config.PROJECT_NAME,
+    docs_url="/api/docs",
+    openapi_url="/api",
+    lifespan=lifespan,
+)
 
 origins = ["*"]
 
@@ -35,17 +50,13 @@ def setup_logger():
 
 
 @app.middleware("http")
-async def db_session_middleware(request: Request, call_next):
+async def db_session_middleware(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+):
     request.state.db = SessionLocal()
     response = await call_next(request)
     request.state.db.close()
     return response
-
-
-@app.on_event("startup")
-def on_startup():
-    setup_logger()
-    create_tables()
 
 
 app.include_router(auth_router, prefix="/api/authentication", tags=["Authentication"])
