@@ -67,3 +67,11 @@ class ImageNotFound(HTTPException):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Image with id {uuid} not found"
         )
+
+
+class TemplateRemoveForbidden(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only self created templates can be removed"
+        )

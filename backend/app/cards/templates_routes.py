@@ -6,6 +6,7 @@ from fastapi import Depends, APIRouter, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from cards.exceptions import TemplateRemoveForbidden
 from cards.schemas import CardTemplate, CardTemplateTitles
 from cards.utils import get_card_template_by_id
 from core.auth import get_current_user
@@ -54,8 +55,12 @@ async def get_card_template(
 async def delete_template(
         template_id: int,
         db: Annotated[Session, Depends(get_db)],
+        current_user: Annotated[User, Depends(get_current_user)],
 ) -> Response:
     template = get_card_template_by_id(template_id, db)
+
+    if template.user.id != current_user.id:
+        raise TemplateRemoveForbidden
 
     db.delete(template)
     db.commit()
