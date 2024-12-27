@@ -1,46 +1,78 @@
 import { ChangeEvent, useState } from "react";
 import { useAuth } from "../auth";
+import {
+  Input,
+  Button,
+  VStack,
+  Box,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Login = () => {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-
-  const { loginMutation } = useAuth()
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const { loginMutation } = useAuth();
+  const bg = useColorModeValue("#f9f7f5", "#26292d");
 
   if (loginMutation.isPending) {
-    return <h1>Logging ...</h1>
+    return <h1>Logging ...</h1>;
   }
 
-  const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    loginMutation.mutate({ username, password })
-  }
+  const handleOnSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await loginMutation.mutateAsync({ username, password });
+    await navigate({ to: "/cards" });
+  };
 
-  return <>
-    <form onSubmit={handleOnSubmit}>
-      <label htmlFor="username">username:</label>
-      <input
-        id="username"
-        name="username"
-        type="text"
-        value={username}
-        onChange={(e) => { setUsername(e.target.value) }}
-      />
-      <br />
-      <label htmlFor="password">password:</label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        value={password}
-        onChange={(e) => { setPassword(e.target.value) }}
-      />
-      <br />
-      <button type="submit">
-        {loginMutation.isPending ? "Logging in ..." : "Submit"}
-      </button>
-      {loginMutation.isError && <p>Error</p>}
-      {loginMutation.isSuccess && <p>Success</p>}
-    </form>
-  </>
-}
+  return (
+    <>
+      <form onSubmit={handleOnSubmit}>
+        <Box w={"100%"} display={"flex"} justifyContent="center">
+          <VStack
+            p={4}
+            bgColor={bg}
+            borderRadius={"5px"}
+            border={"1px solid gray.500"}
+            spacing={4}
+            align="stretch"
+            width={"50%"}
+            maxW={"500px"}
+            minW={"400px"}
+          >
+            <label htmlFor="username">username:</label>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+              }}
+            />
+
+            <label htmlFor="password">password:</label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            />
+
+            <Button
+              type="submit"
+              disabled={loginMutation.isPending}
+              variant="solid"
+            >
+              {loginMutation.isPending ? "Входим ..." : "Войти"}
+            </Button>
+          </VStack>
+        </Box>
+      </form>
+    </>
+  );
+};

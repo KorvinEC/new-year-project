@@ -1,74 +1,93 @@
-import { useAtom } from "jotai"
-import { useCreateCardWithImage } from "../api/cards"
-import { createCardAtom, imagesToAddAtom } from "../state/atoms"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { CardDataFieldType, CreateCardType } from "../types/card"
-import { RESET } from "jotai/utils"
+import { useAtom } from "jotai";
+import { useCreateCardWithImage } from "../api/cards";
+import { createCardAtom, imagesToAddAtom } from "../state/atoms";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CardDataFieldType, CreateCardType } from "../types/card";
+import { RESET } from "jotai/utils";
 
-type FieldNameType = "description" | "title" | "subtitle"
-type CardType = "card_nominations_data" | "card_suggestions_data"
+type FieldNameType = "description" | "title" | "subtitle";
+type CardType = "card_nominations_data" | "card_suggestions_data";
 
 export const useCreateCard = () => {
-  const [createCard, setCreateCardAtom] = useAtom(createCardAtom)
-  const [imagesToAdd, setAddImageToCard] = useAtom(imagesToAddAtom)
-  const createCardWithImage = useCreateCardWithImage()
+  const [createCard, setCreateCardAtom] = useAtom(createCardAtom);
+  const [imagesToAdd, setAddImageToCard] = useAtom(imagesToAddAtom);
+  const createCardWithImage = useCreateCardWithImage();
 
-  const addImageToCard = (index: number, card_data_type: CardDataFieldType, image_file: File) => {
+  const addImageToCard = (
+    index: number,
+    card_data_type: CardDataFieldType,
+    image_file: File,
+  ) => {
+    console.log(imagesToAdd);
     setAddImageToCard([
-      ...imagesToAdd,
-      { index, card_data_type, image_file }
-    ])
-  }
+      ...imagesToAdd.filter(
+        (imageToAdd) =>
+          !(
+            imageToAdd.card_data_type === card_data_type &&
+            imageToAdd.index === index
+          ),
+      ),
+      { index, card_data_type, image_file },
+    ]);
+  };
 
   const addSuggestionField = () => {
     if (!createCard) {
-      throw Error("Template should be selected before card creation")
+      throw Error("Template should be selected before card creation");
     }
 
-    const newCreateCard: CreateCardType = { ...createCard }
+    const newCreateCard: CreateCardType = { ...createCard };
     newCreateCard.card_suggestions_data = [
       ...newCreateCard.card_suggestions_data,
-      { "title": "", "subtitle": "", "description": "" }
-    ]
-    setCreateCardAtom(newCreateCard)
-  }
+      { title: "", subtitle: "", description: "" },
+    ];
+    setCreateCardAtom(newCreateCard);
+  };
 
   const removeSuggestionField = (removeIndex: number) => {
     if (!createCard) {
-      throw Error("Template should be selected before card creation")
+      throw Error("Template should be selected before card creation");
     }
-    const newCreateCard: CreateCardType = { ...createCard }
-    newCreateCard.card_suggestions_data = newCreateCard.card_suggestions_data.filter((_, index) => (index !== removeIndex))
-    setCreateCardAtom(newCreateCard)
-  }
+    const newCreateCard: CreateCardType = { ...createCard };
+    newCreateCard.card_suggestions_data =
+      newCreateCard.card_suggestions_data.filter(
+        (_, index) => index !== removeIndex,
+      );
+    setCreateCardAtom(newCreateCard);
+  };
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const createCardMutation = useMutation({
     mutationFn: () => {
       if (!createCard) {
-        throw Error("Template should be selected before card creation")
+        throw Error("Template should be selected before card creation");
       }
-      return createCardWithImage(createCard, imagesToAdd)
+      return createCardWithImage(createCard, imagesToAdd);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: "card" })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: "card" });
     },
     onSettled: () => {
-      setCreateCardAtom(RESET)
-      setAddImageToCard(RESET)
-    }
-  })
+      setCreateCardAtom(RESET);
+      setAddImageToCard(RESET);
+    },
+  });
 
-  const changeCreateCard = (fieldType: CardType, index: number, name: FieldNameType, value: string) => {
+  const changeCreateCard = (
+    fieldType: CardType,
+    index: number,
+    name: FieldNameType,
+    value: string,
+  ) => {
     if (!createCard) {
-      throw Error("Template should be selected before card creation")
+      throw Error("Template should be selected before card creation");
     }
     // TODO change to use of Atom in Atom
-    const newCreateCard: CreateCardType = { ...createCard }
-    newCreateCard[fieldType][index][name] = value
-    setCreateCardAtom(newCreateCard)
-  }
+    const newCreateCard: CreateCardType = { ...createCard };
+    newCreateCard[fieldType][index][name] = value;
+    setCreateCardAtom(newCreateCard);
+  };
 
   return {
     createCard,
@@ -80,5 +99,5 @@ export const useCreateCard = () => {
     addSuggestionField,
     removeSuggestionField,
     addImageToCard,
-  }
-}
+  };
+};

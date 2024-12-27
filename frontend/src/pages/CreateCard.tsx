@@ -1,190 +1,279 @@
-import { useNavigate } from "@tanstack/react-router"
-import { ChangeEvent } from "react"
-import { useCreateCard } from "../hooks/useCreateCard"
-import styled from "styled-components"
+import { useNavigate } from "@tanstack/react-router";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useCreateCard } from "../hooks/useCreateCard";
+
+import {
+  Box,
+  Button,
+  Card,
+  CardHeader,
+  Input,
+  Textarea,
+  Text,
+  CardBody,
+  Stack,
+  SimpleGrid,
+  Heading,
+  useColorModeValue,
+  Image,
+} from "@chakra-ui/react";
+import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 
 interface FieldProps {
-  index: number
-  title: string
-  subtitle: string
-  description: string
+  index: number;
+  title: string;
+  subtitle: string;
+  description: string;
 }
-
-const CardFieldContainer = styled.div`
-  border: 2px solid;
-  margin: 0px 0px 5px 0px;
-  padding: 5px 5px 5px 5px;
-`
 
 const Nomination = (props: { structure: FieldProps }) => {
-  const { changeCreateCard, addImageToCard } = useCreateCard()
+  const { changeCreateCard, addImageToCard } = useCreateCard();
+  const [preview, setPreview] = useState<string | undefined>(undefined);
 
-  const handleImageFile = (index: number, event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files?.length != 1) { return }
-    addImageToCard(index, "nominations", event.target.files[0])
-  }
+  const handleImageFile = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
 
-  return <CardFieldContainer>
-    <div style={{ display: "flex" }}>
-      <p style={{ margin: "0px 0px 0px 0px" }}>title: {props.structure.title}</p>
-    </div>
-    <div style={{ display: "flex" }}>
-      <input 
-        type="file"
-        datatype="image"
-        onChange={(e) => handleImageFile(props.structure.index, e)}
-      />
-    </div>
-    <div style={{ display: "flex" }}>
-      <p style={{ margin: "0px 0px 0px 0px" }}>subtitle: {props.structure.subtitle}</p>
-    </div>
-    <div style={{ display: "flex" }}>
-      <label htmlFor="description">description: </label>
-      <input
-        type="description"
-        name="description"
-        value={props.structure.description}
-        onChange={event => changeCreateCard(
-          "card_nominations_data",
-          props.structure.index,
-          "description",
-          event.target.value
-        )}
-      />
-    </div>
-  </CardFieldContainer>
-}
+    if (event.target.files?.length != 1) {
+      return;
+    }
+
+    if (!file) return;
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+    addImageToCard(index, "nominations", file);
+  };
+  console.log(preview);
+
+  return (
+    <Card w={"350px"}>
+      <CardHeader>
+        <Heading size={"md"}>{props.structure.title}</Heading>
+        <div>
+          <Text>{props.structure.subtitle}</Text>
+        </div>
+      </CardHeader>
+      <CardBody>
+        <Stack spacing="4">
+          <Box display={"flex"} alignItems={"center"} h={"60px"}>
+            <Input
+              mr={8}
+              p={0}
+              border={"none"}
+              width={"100%"}
+              type="file"
+              datatype="image"
+              onChange={(e) => handleImageFile(props.structure.index, e)}
+            />
+            <Image maxH={"60px"} src={preview} />
+          </Box>
+          <Box>
+            <Text as="b">Описание: </Text>
+            <Textarea
+              maxLength={500}
+              name="description"
+              value={props.structure.description}
+              onChange={(event) =>
+                changeCreateCard(
+                  "card_nominations_data",
+                  props.structure.index,
+                  "description",
+                  event.target.value,
+                )
+              }
+            />
+          </Box>
+        </Stack>
+      </CardBody>
+    </Card>
+  );
+};
 
 const Suggestion = (props: { structure: FieldProps }) => {
-  const { changeCreateCard, removeSuggestionField, addImageToCard } = useCreateCard()
+  const { changeCreateCard, removeSuggestionField, addImageToCard } =
+    useCreateCard();
 
-  const handleImageFile = (index: number, event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files?.length != 1) { return }
-    addImageToCard(index, "suggestions", event.target.files[0])
-  }
+  const handleImageFile = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (event.target.files?.length != 1) {
+      return;
+    }
+    addImageToCard(index, "suggestions", event.target.files[0]);
+  };
 
-  return <CardFieldContainer>
-    <div style={{ display: "flex" }}>
-      <label htmlFor="title">title: </label>
-      <input
-        type="text"
-        name="title"
-        value={props.structure.title}
-        onChange={event => changeCreateCard(
-          "card_suggestions_data",
-          props.structure.index,
-          "title",
-          event.target.value
-        )}
-      />
-    </div>
-    <div style={{ display: "flex" }}>
-      <input 
-        type="file"
-        datatype="image"
-        onChange={(e) => handleImageFile(props.structure.index, e)}
-      />
-    </div>
-    <div style={{ display: "flex" }}>
-      <label htmlFor="subtitle">subtitle: </label>
-      <input
-        type="text"
-        name="subtitle"
-        value={props.structure.subtitle}
-        onChange={event => changeCreateCard(
-          "card_suggestions_data",
-          props.structure.index,
-          "subtitle",
-          event.target.value
-        )}
-      />
-    </div>
-    <div style={{ display: "flex" }}>
-      <label htmlFor="description">description: </label>
-      <input
-        type="text"
-        name="description"
-        value={props.structure.description}
-        onChange={event => changeCreateCard(
-          "card_suggestions_data",
-          props.structure.index,
-          "description",
-          event.target.value
-        )}
-      />
-    </div>
-    <button type="button" onClick={() => removeSuggestionField(props.structure.index)}>Remove</button>
-  </CardFieldContainer>
-}
-
-const FieldContainer = styled.div`
-  border: 2px solid;
-  margin: 0px 0px 5px 0px;
-  padding: 5px 5px 5px 5px;
-`
-
-const FieldListContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-`
+  return (
+    <Card w={"350px"}>
+      <CardBody>
+        <Stack spacing={2}>
+          <Box>
+            <Box
+              display={"flex"}
+              justifyContent={"space-between"}
+              alignItems={"center"}
+              mb={2}
+            >
+              <Text as="b">Заголовок: </Text>
+              <Button
+                onClick={() => removeSuggestionField(props.structure.index)}
+              >
+                <DeleteIcon />
+              </Button>
+            </Box>
+            <Input
+              type="text"
+              name="title"
+              value={props.structure.title}
+              onChange={(event) =>
+                changeCreateCard(
+                  "card_suggestions_data",
+                  props.structure.index,
+                  "title",
+                  event.target.value,
+                )
+              }
+            />
+          </Box>
+          <Box>
+            <Input
+              type="file"
+              datatype="image"
+              onChange={(e) => handleImageFile(props.structure.index, e)}
+            />
+          </Box>
+          <Box>
+            <Text as="b">Подзаголовок: </Text>
+            <Input
+              type="text"
+              name="subtitle"
+              value={props.structure.subtitle}
+              onChange={(event) =>
+                changeCreateCard(
+                  "card_suggestions_data",
+                  props.structure.index,
+                  "subtitle",
+                  event.target.value,
+                )
+              }
+            />
+          </Box>
+          <Box>
+            <Text as="b">Описание: </Text>
+            <Textarea
+              name="description"
+              value={props.structure.description}
+              onChange={(event) =>
+                changeCreateCard(
+                  "card_suggestions_data",
+                  props.structure.index,
+                  "description",
+                  event.target.value,
+                )
+              }
+            />
+          </Box>
+        </Stack>
+      </CardBody>
+    </Card>
+  );
+};
 
 const Nominations = () => {
-  const { createCard } = useCreateCard()
+  const { createCard } = useCreateCard();
 
-  return <FieldContainer>
-    <h2>Nominations:</h2>
-    <FieldListContainer>
-      {
-        createCard
-          ? createCard.card_nominations_data.map((value, index) => <Nomination key={index} structure={{ ...value, index }} />)
-          : <p>No items</p>
-      }
-    </FieldListContainer>
-  </FieldContainer>
-}
+  return (
+    <Box>
+      <SimpleGrid minChildWidth="350px" spacing="20px">
+        {createCard ? (
+          createCard.card_nominations_data.map((value, index) => (
+            <Nomination key={index} structure={{ ...value, index }} />
+          ))
+        ) : (
+          <p>No items</p>
+        )}
+      </SimpleGrid>
+    </Box>
+  );
+};
 
 const Suggestions = () => {
-  const { createCard, addSuggestionField } = useCreateCard()
+  const { createCard, addSuggestionField } = useCreateCard();
+  const colorScheme = useColorModeValue("blue", "orange");
 
-  return <FieldContainer>
-    <h2>Suggestions:</h2>
-    <FieldListContainer>
-      {
-        createCard
-          ? createCard.card_suggestions_data.map((value, index) => <Suggestion key={index} structure={{ ...value, index }} />)
-          : <p>No items</p>
-      }
-    </FieldListContainer>
-    <button type="button" onClick={addSuggestionField}>Add</button>
-  </FieldContainer>
-}
+  return (
+    <Box mt={"20px"}>
+      <Text fontSize="xl">Предложения:</Text>
+      <SimpleGrid minChildWidth="350px" spacing="20px" mt={2}>
+        {createCard ? (
+          createCard.card_suggestions_data.map((value, index) => (
+            <Suggestion key={index} structure={{ ...value, index }} />
+          ))
+        ) : (
+          <p>No items</p>
+        )}
+        <Box
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"center"}
+          h={"360px"}
+          border={"1px solid #f1f1f1"}
+          borderRadius={4}
+          w={"350px"}
+        >
+          <Button colorScheme={colorScheme} onClick={addSuggestionField}>
+            <AddIcon />
+          </Button>
+        </Box>
+      </SimpleGrid>
+    </Box>
+  );
+};
 
 export const CreateCards = () => {
-  const navigate = useNavigate({ from: "/cards/create" })
-  const { createCard, createCardMutation } = useCreateCard()
+  const navigate = useNavigate({ from: "/cards/create" });
+  const { createCard, createCardMutation } = useCreateCard();
 
-  if (createCardMutation.isSuccess) {
-    console.log("createCardMutation.isSuccess");
-    navigate({ to: "/cards" })
-  }
+  useEffect(() => {
+    if (!createCard && createCardMutation.isIdle) {
+      navigate({ to: "/templates" });
+    }
+  }, [
+    createCardMutation.isSuccess,
+    createCard,
+    createCardMutation.isIdle,
+    navigate,
+  ]);
 
-  if (!createCard && createCardMutation.isIdle) {
-    console.log("/templates");
-    navigate({ to: "/templates" })
-  }
+  const handleOnSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    createCardMutation.mutateAsync().then(() => {
+      navigate({ to: "/cards" });
+    });
+  };
 
-  const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    createCardMutation.mutate()
-  }
+  const colorScheme = useColorModeValue("blue", "orange");
 
-  return <>
-    <h1>Create card</h1>
-    <form onSubmit={handleOnSubmit}>
-      <Nominations />
-      <Suggestions />
-      <button type="submit">Submit</button>
-    </form>
-  </>
-}
+  return (
+    <Box m={"0 32px"}>
+      <form onSubmit={handleOnSubmit}>
+        <Box
+          display={"flex"}
+          justifyContent={"space-between"}
+          alignItems={"center"}
+          mb={4}
+        >
+          <Text fontSize="4xl">Создать номинации</Text>
+          <Button type="submit" colorScheme={colorScheme}>
+            Сохранить
+          </Button>
+        </Box>
+        <Nominations />
+        <Suggestions />
+      </form>
+    </Box>
+  );
+};
