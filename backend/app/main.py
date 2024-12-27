@@ -3,14 +3,14 @@ from contextlib import asynccontextmanager
 import logging
 
 import uvicorn
-from fastapi import FastAPI, Depends, Response
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
 from authentication.auth import auth_router
-from cards.routes import cards_router, images_router
+from cards.routes import cards_router
+from images.routes import images_router
 from core import config
-from core.auth import get_current_user
 from database.session import SessionLocal, create_tables
 from users.routes import users_router
 
@@ -64,13 +64,11 @@ app.include_router(
     cards_router,
     prefix="/api/cards",
     tags=["Cards"],
-    dependencies=[Depends(get_current_user)],
 )
 app.include_router(
     users_router,
     prefix="/api/users",
     tags=["Users"],
-    dependencies=[Depends(get_current_user)],
 )
 app.include_router(images_router, prefix="/api/images", tags=["Images"])
 

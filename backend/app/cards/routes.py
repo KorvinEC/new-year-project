@@ -4,13 +4,12 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, status, Request, Query
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
 from cards.exceptions import (
     CardDataLengthNotMatch,
-    ImageNotFound,
     CardRemoveForbidden,
     CardDataRemoveForbidden,
 )
@@ -26,10 +25,10 @@ from cards.utils import (
     get_card_template_by_id,
     get_card_by_id,
     get_card_data_by_id,
-    get_image_by_uuid,
 )
+from images.utils import get_image_by_uuid
 from core.auth import get_current_user
-from database.models import Cards, Images, UserImage
+from database.models import Cards, Images
 from database.schemas import User
 from database.session import get_db
 
@@ -38,7 +37,6 @@ router.include_router(
     templates_router, prefix="/templates", dependencies=[Depends(get_current_user)]
 )
 
-images_router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
@@ -233,33 +231,3 @@ async def add_image_to_card(
     db.commit()
 
     return Response(status_code=status.HTTP_201_CREATED)
-
-
-@images_router.get("/cards/{image_uuid}")
-async def get_card_image(
-    image_uuid: uuid.UUID,
-    db: Annotated[Session, Depends(get_db)],
-) -> FileResponse:
-    image_data = get_image_by_uuid(image_uuid, db, Images)
-    logger.debug(image_data)
-    image_path_obj = Path(image_data.path)
-
-    if not image_path_obj.exists():
-        raise ImageNotFound(image_uuid)
-
-    return FileResponse(image_path_obj)
-
-
-@images_router.get("/users/{image_uuid}")
-async def get_user_image(
-    image_uuid: uuid.UUID,
-    db: Annotated[Session, Depends(get_db)],
-) -> FileResponse:
-    image_data = get_image_by_uuid(image_uuid, db, UserImage)
-    logger.debug(image_data)
-    image_path_obj = Path(image_data.path)
-
-    if not image_path_obj.exists():
-        raise ImageNotFound(image_uuid)
-
-    return FileResponse(image_path_obj)
