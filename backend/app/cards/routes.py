@@ -1,14 +1,19 @@
 import logging
 import uuid
 from pathlib import Path
-from typing import Annotated, Type
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, status, Request, Query
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
-from cards.exceptions import CardDataLengthNotMatch, ImageNotFound
+from cards.exceptions import (
+    CardDataLengthNotMatch,
+    ImageNotFound,
+    CardRemoveForbidden,
+    CardDataRemoveForbidden,
+)
 from cards.schemas import (
     Card,
     CreateCard,
@@ -41,7 +46,7 @@ logger = logging.getLogger(__name__)
 @router.get("/", response_model=list[Card])
 async def get_cards(
     db: Annotated[Session, Depends(get_db)],
-) -> list[Type[Cards]]:
+) -> list[Cards]:
     return db.query(Cards).order_by(Cards.id.desc()).all()
 
 
@@ -93,7 +98,7 @@ async def create_card(
 async def get_card(
     card_id: int,
     db: Annotated[Session, Depends(get_db)],
-) -> Type[Card]:
+) -> Card:
     card = get_card_by_id(card_id, db)
 
     return card
@@ -104,7 +109,7 @@ async def add_suggestions_to_card(
     card_id: int,
     input_data: AddCardSuggestions,
     db: Annotated[Session, Depends(get_db)],
-) -> Type[Card]:
+) -> Card:
     card = get_card_by_id(card_id, db)
 
     card_new_id = max([item["id"] for item in card.data["suggestions"]]) + 1
@@ -130,8 +135,12 @@ async def add_suggestions_to_card(
 async def delete_card(
     card_id: int,
     db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> Response:
     card = get_card_by_id(card_id, db)
+
+    if card.user.id != current_user.id:
+        raise CardRemoveForbidden
 
     db.delete(card)
     db.commit()
@@ -145,10 +154,12 @@ async def delete_sub_card(
     data_id: int,
     card_data_type: Annotated[CardDataTypes, Query(...)],
     db: Annotated[Session, Depends(get_db)],
-) -> Type[Card]:
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> Card:
     card, _ = get_card_data_by_id(card_id, data_id, card_data_type, db)
 
-    logger.debug(f"{card.data = }")
+    if card.user.id != current_user.id:
+        raise CardDataRemoveForbidden
 
     card.data[card_data_type.name] = [
         item for item in card.data[card_data_type.name] if item["id"] != data_id
@@ -196,7 +207,9 @@ async def add_image_to_card(
     if not file_path.parent.exists():
         file_path.parent.mkdir(parents=True)
 
-    image_url = f"{request.url.scheme}://{request.url.netloc}/api/images/cards/{image_uuid}"
+    image_url = (
+        f"{request.url.scheme}://{request.url.netloc}/api/images/cards/{image_uuid}"
+    )
 
     card_data["image_uuid"] = str(image_uuid)
     card_data["image_url"] = image_url
