@@ -2,6 +2,7 @@ import { useCards } from "../hooks/useCards"
 import { CardFieldsType, CardType } from "../types/card"
 import styled from "styled-components"
 import { UserType } from "../types/user"
+import { useAuth } from "../auth"
 
 const UserContainerStyle = styled.div`
   border: 2px solid;
@@ -70,6 +71,7 @@ const Card = (props: { card: CardType }) => {
   const { card } = props
   const { nominations, suggestions } = card.data
   const { removeCardMutation } = useCards()
+  const { isAuthenticated } = useAuth()
 
   return <CardContainer>
     <UserContainer user={card.user} />
@@ -86,7 +88,10 @@ const Card = (props: { card: CardType }) => {
         </CardListContainer>
       </div>
     }
-    <button type="submit" onClick={() => removeCardMutation.mutate(props.card.id)}>Remove</button>
+    {
+      isAuthenticated() &&
+      <button type="submit" onClick={() => removeCardMutation.mutate(props.card.id)}>Remove</button>
+    }
   </CardContainer>
 }
 

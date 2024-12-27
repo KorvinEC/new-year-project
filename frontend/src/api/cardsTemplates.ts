@@ -1,4 +1,4 @@
-import { CardTemplate, TemplateStructure } from "../types/cardTemplate"
+import { CardTemplate, TemplateStructureType } from "../types/cardTemplate"
 import { useAxiosInstance } from "./api-client"
 
 export const useFetchCardsTemplates = () => {
@@ -13,7 +13,7 @@ export const useFetchCardsTemplates = () => {
 export const useCreateCardsTemplate = () => {
   const axiosInstance = useAxiosInstance()
 
-  return async (structure: TemplateStructure[]): Promise<CardTemplate[]> => {
+  return async (structure: TemplateStructureType[]): Promise<CardTemplate[]> => {
     const response = await axiosInstance.post("cards/templates/", { structure })
     return response.data
   }

@@ -5,6 +5,7 @@ import { useSetAtom } from "jotai"
 import { createCardAtom } from "../state/atoms"
 import { TemplateStructureType } from "../types/cardTemplate"
 import { UserType } from "../types/user"
+import { useAuth } from "../auth"
 
 const UserContainerStyle = styled.div`
   border: 2px solid;
@@ -65,6 +66,8 @@ const TemplateListContainer = styled.div`
 const TemplatesList = () => {
   const navigate = useNavigate({ from: "/templates" })
 
+  const { isAuthenticated } = useAuth()
+
   const setCreateAtom = useSetAtom(createCardAtom)
 
   const { useCardsTemplatesQuery, cardsTemplatesRemoveMutation } = useCardsTemplates()
@@ -108,8 +111,12 @@ const TemplatesList = () => {
             <TemplateListContainer>
               {cardTemplate.structure.map((structure, index) => <TemplateFields key={index} structure={structure} />)}
             </TemplateListContainer>
-            <button type="submit" onClick={() => handleRemoveTemplate(cardTemplate.id)}>Remove</button>
-            <button type="submit" onClick={() => handleCreateTemplate(cardTemplate.id)}>Create Card</button>
+            {
+              isAuthenticated() && <>
+                <button type="submit" onClick={() => handleRemoveTemplate(cardTemplate.id)}>Remove</button>
+                <button type="submit" onClick={() => handleCreateTemplate(cardTemplate.id)}>Create Card</button>
+              </>
+            }
           </TemplateContainer>
       )
     }
@@ -117,12 +124,16 @@ const TemplatesList = () => {
 }
 
 export const Templates = () => {
+  const { isAuthenticated } = useAuth()
   return <>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <h1 style={{ display: "inline" }}>Templates</h1>
-      <Link to="/templates/create">
-        <h1 style={{ display: "inline" }}>Create</h1>
-      </Link>
+      {
+        isAuthenticated() &&
+        <Link to="/templates/create">
+          <h1 style={{ display: "inline" }}>Create</h1>
+        </Link>
+      }
     </div>
     <TemplatesList />
   </>
