@@ -1,8 +1,8 @@
-from typing import Type, TypeVar
+from typing import TypeVar
 from uuid import UUID
 
-import sqlalchemy
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 
 from cards.exceptions import (
     CardTemplateNotFound,
@@ -18,20 +18,20 @@ from database.models import Templates, Cards, Images, UserImage
 def get_card_template_by_id(
     template_id: int,
     db: Session,
-) -> Type[Templates]:
+) -> Templates:
     try:
         return db.query(Templates).filter(Templates.id == template_id).one()
-    except sqlalchemy.orm.exc.NoResultFound:
+    except NoResultFound:
         raise CardTemplateNotFound(template_id)
 
 
 def get_card_by_id(
     card_id: int,
     db: Session,
-) -> Type[Cards]:
+) -> Cards:
     try:
         return db.query(Cards).filter(Cards.id == card_id).one()
-    except sqlalchemy.orm.exc.NoResultFound:
+    except NoResultFound:
         raise CardNotFound(card_id)
 
 
@@ -40,7 +40,7 @@ def get_card_data_by_id(
     data_id: int,
     card_data_type: CardDataTypes,
     db: Session,
-) -> (Type[Cards], dict):
+) -> tuple[Cards, dict[str, str]]:
     card = get_card_by_id(card_id, db)
 
     try:
@@ -63,5 +63,5 @@ def get_image_by_uuid(
 ) -> T:
     try:
         return db.query(image_class).filter(image_class.id == uuid).one()
-    except sqlalchemy.orm.exc.NoResultFound:
+    except NoResultFound:
         raise ImageNotFound(uuid)
