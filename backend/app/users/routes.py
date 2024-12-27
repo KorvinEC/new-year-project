@@ -2,13 +2,14 @@ from pathlib import Path
 from typing import Annotated
 import uuid
 
-from fastapi import APIRouter, Depends, Request, UploadFile, status
+from fastapi import APIRouter, Depends, Query, Request, UploadFile, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from database.models import UserImage, Users
 from database.session import get_db
 from core.auth import get_current_user
+from pagination import PagedResponse, paginate
 from users.schemas import User
 from users.utils import get_user_by_id
 
@@ -19,11 +20,14 @@ protected_router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[User], response_model_exclude_none=True)
+@router.get("/", response_model=PagedResponse[User], response_model_exclude_none=True)
 async def get_users(
     db: Annotated[Session, Depends(get_db)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1)] = 50,
 ):
-    return db.query(Users).all()
+    query = db.query(Users)
+    return paginate(query, User, page, per_page)
 
 
 @protected_router.get("/me", response_model=User, response_model_exclude_none=True)

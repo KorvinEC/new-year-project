@@ -1,10 +1,6 @@
 import json
 from typing import Annotated
 
-from fastapi import Depends, APIRouter, status
-from fastapi.responses import Response
-from sqlalchemy.orm import Session
-
 from cards.exceptions import TemplateRemoveForbidden
 from cards.schemas import CardTemplate, CardTemplateTitles
 from cards.utils import get_card_template_by_id
@@ -12,6 +8,11 @@ from core.auth import get_current_user
 from database.models import Templates
 from database.schemas import User
 from database.session import get_db
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import Response
+from sqlalchemy.orm import Session
+
+from pagination import PagedResponse, paginate
 
 templates_router = APIRouter(prefix="/templates")
 router = APIRouter(tags=["Templates"])
@@ -20,11 +21,14 @@ protected_router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[CardTemplate])
+@router.get("/", response_model=PagedResponse[CardTemplate])
 async def get_cards_templates(
     db: Annotated[Session, Depends(get_db)],
-) -> list[Templates]:
-    return db.query(Templates).order_by(Templates.id.desc()).all()
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1)] = 50,
+) -> PagedResponse[CardTemplate]:
+    query = db.query(Templates).order_by(Templates.id.desc())
+    return paginate(query, CardTemplate, page, per_page)
 
 
 @protected_router.post("/", response_model=CardTemplate)

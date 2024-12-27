@@ -64,6 +64,9 @@ class Card(BaseModel):
     data: CardCategories
     user: User
 
+    class Config:
+        from_attributes = True
+
 
 class CreateNominationData(BaseModel):
     description: str | None = None

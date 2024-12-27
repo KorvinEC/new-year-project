@@ -30,6 +30,7 @@ from core.auth import get_current_user
 from database.models import Cards, Images
 from database.schemas import User
 from database.session import get_db
+from pagination import PagedResponse, paginate
 
 cards_router = APIRouter(prefix="/api/cards")
 router = APIRouter(tags=["Cards"])
@@ -38,11 +39,14 @@ protected_router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[Card])
+@router.get("/", response_model=PagedResponse[Card])
 async def get_cards(
     db: Annotated[Session, Depends(get_db)],
-) -> list[Cards]:
-    return db.query(Cards).order_by(Cards.id.desc()).all()
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1)] = 50,
+):
+    query = db.query(Cards).order_by(Cards.id.desc())
+    return paginate(query, Card, page, per_page)
 
 
 @protected_router.post("/", response_model=Card)
