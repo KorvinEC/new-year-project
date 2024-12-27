@@ -1,17 +1,14 @@
-import { useNavigate } from "@tanstack/react-router"
 import { ChangeEvent, useState } from "react";
-import { useUser } from "../hooks/useUser";
+import { useAuth } from "../auth";
 
 export const Login = () => {
-  const navigate = useNavigate({ from: "/login" })
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
 
-  const [ username, setUsername ] = useState("")
-  const [ password, setPassword ] = useState("")
+  const { loginMutation } = useAuth()
 
-  const { loginMutation } = useUser()
-
-  if (loginMutation.isSuccess) {
-    navigate({ to: "/" })
+  if (loginMutation.isPending) {
+    return <h1>Logging ...</h1>
   }
 
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
@@ -22,28 +19,28 @@ export const Login = () => {
   return <>
     <form onSubmit={handleOnSubmit}>
       <label htmlFor="username">username:</label>
-      <input 
-        id="username" 
-        name="username" 
+      <input
+        id="username"
+        name="username"
         type="text"
-        value={username} 
-        onChange={(e) => {setUsername(e.target.value)}}
-        / >
-      <br/>
+        value={username}
+        onChange={(e) => { setUsername(e.target.value) }}
+      />
+      <br />
       <label htmlFor="password">password:</label>
-      <input 
-        id="password" 
-        name="password" 
+      <input
+        id="password"
+        name="password"
         type="password"
         value={password}
-        onChange={(e) => {setPassword(e.target.value)}}
-        />
-      <br/>
+        onChange={(e) => { setPassword(e.target.value) }}
+      />
+      <br />
       <button type="submit">
-        { loginMutation.isPending ? "Logging in ..." : "Submit" }
+        {loginMutation.isPending ? "Logging in ..." : "Submit"}
       </button>
-      { loginMutation.isError && <p>Error</p> }
-      { loginMutation.isSuccess && <p>Success</p> }
+      {loginMutation.isError && <p>Error</p>}
+      {loginMutation.isSuccess && <p>Success</p>}
     </form>
   </>
 }

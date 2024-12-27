@@ -19,8 +19,8 @@ type Image = {
   id: number
 }
 
-export type User = {
+export type UserType = {
   id: number
   nickname: string
-  image: Image
+  image: Image | undefined
 }

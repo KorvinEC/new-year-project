@@ -4,7 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import { useSetAtom } from "jotai"
 import { createCardAtom } from "../state/atoms"
 import { TemplateStructureType } from "../types/cardTemplate"
-import { User } from "../types/user"
+import { UserType } from "../types/user"
 
 const UserContainerStyle = styled.div`
   border: 2px solid;
@@ -22,7 +22,7 @@ const UserContainerStyle = styled.div`
   }
 `
 
-const UserContainer = ({ user }: { user: User }) => {
+const UserContainer = ({ user }: { user: UserType }) => {
   return <UserContainerStyle>
     {
       user.image &&

@@ -1,4 +1,4 @@
-import { User } from "./user"
+import { UserType } from "./user"
 
 export type CreateCardFieldType = {
   title: string
@@ -27,7 +27,7 @@ export type CardType = {
     nominations: CardFieldsType[]
     suggestions: CardFieldsType[]
   }
-  user: User
+  user: UserType
 }
 
 type NominationType = {

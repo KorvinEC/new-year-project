@@ -1,6 +1,7 @@
 import { useCards } from "../hooks/useCards"
 import { CardFieldsType, CardType } from "../types/card"
 import styled from "styled-components"
+import { UserType } from "../types/user"
 
 const UserContainerStyle = styled.div`
   border: 2px solid;
@@ -18,7 +19,7 @@ const UserContainerStyle = styled.div`
   }
 `
 
-const UserContainer = ({ user }: { user: User }) => {
+export const UserContainer = ({ user }: { user: UserType }) => {
   return <UserContainerStyle>
     {
       user.image &&

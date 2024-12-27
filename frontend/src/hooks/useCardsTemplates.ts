@@ -5,14 +5,10 @@ import { tokenAtom } from "../state/atoms"
 
 export const useCardsTemplates = () => {
   const fetchCardsTemplates = useFetchCardsTemplates()
-  const token = useAtomValue(tokenAtom)
 
   const useCardsTemplatesQuery = () => useQuery({
     queryKey: ["templates"],
     queryFn: fetchCardsTemplates,
-    staleTime: 0,
-    gcTime: 0,
-    enabled: !!token,
   })
 
   const removeCardsTemplate = useRemoveCardsTemplate()

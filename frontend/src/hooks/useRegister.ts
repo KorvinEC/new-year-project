@@ -13,6 +13,7 @@ export const useRegister = () => {
     mutationFn: regitser,
     onSuccess(data: TokenType) {
       setToken(data.access_token)
+      navigate({ to: "/" })
     },
   })
 

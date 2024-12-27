@@ -1,7 +1,6 @@
-import { User } from "./user"
+import { UserType } from "./user"
 
 export type TemplateStructureType = {
-  id: number
   title: string
   subtitle: string
 }
@@ -9,5 +8,5 @@ export type TemplateStructureType = {
 export type CardTemplate = {
   id: number
   structure: TemplateStructureType[]
-  user: User
+  user: UserType
 }
