@@ -32,13 +32,11 @@ from database.models import Cards, Images
 from database.schemas import User
 from database.session import get_db
 
-cards_router = router = APIRouter()
-router.include_router(
-    templates_router, prefix="/templates", dependencies=[Depends(get_current_user)]
+cards_router = APIRouter(prefix="/api/cards")
+router = APIRouter(tags=["Cards"])
+protected_router = APIRouter(
+    dependencies=[Depends(get_current_user)], tags=["Protected cards"]
 )
-
-
-logger = logging.getLogger(__name__)
 
 
 @router.get("/", response_model=list[Card])
@@ -48,7 +46,7 @@ async def get_cards(
     return db.query(Cards).order_by(Cards.id.desc()).all()
 
 
-@router.post("/", response_model=Card)
+@protected_router.post("/", response_model=Card)
 async def create_card(
     input_data: CreateCard,
     db: Annotated[Session, Depends(get_db)],
@@ -102,7 +100,9 @@ async def get_card(
     return card
 
 
-@router.post("/{card_id}", response_model=Card, description="Add suggestions to card")
+@protected_router.post(
+    "/{card_id}", response_model=Card, description="Add suggestions to card"
+)
 async def add_suggestions_to_card(
     card_id: int,
     input_data: AddCardSuggestions,
@@ -129,7 +129,7 @@ async def add_suggestions_to_card(
     return card
 
 
-@router.delete("/{card_id}")
+@protected_router.delete("/{card_id}")
 async def delete_card(
     card_id: int,
     db: Annotated[Session, Depends(get_db)],
@@ -146,7 +146,7 @@ async def delete_card(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.delete("/{card_id}/data/{data_id}", response_model=Card)
+@protected_router.delete("/{card_id}/data/{data_id}", response_model=Card)
 async def delete_sub_card(
     card_id: int,
     data_id: int,
@@ -169,7 +169,7 @@ async def delete_sub_card(
     return card
 
 
-@router.post("/{card_id}/data/{data_id}/image")
+@protected_router.post("/{card_id}/data/{data_id}/image")
 async def add_image_to_card(
     card_id: int,
     data_id: int,
@@ -231,3 +231,8 @@ async def add_image_to_card(
     db.commit()
 
     return Response(status_code=status.HTTP_201_CREATED)
+
+
+cards_router.include_router(router)
+cards_router.include_router(templates_router)
+cards_router.include_router(protected_router)

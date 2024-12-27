@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Annotated
 
 from fastapi import Depends, APIRouter, status
@@ -14,9 +13,11 @@ from database.models import Templates
 from database.schemas import User
 from database.session import get_db
 
-logger = logging.getLogger(__name__)
-
-templates_router = router = APIRouter()
+templates_router = APIRouter(prefix="/templates")
+router = APIRouter(tags=["Templates"])
+protected_router = APIRouter(
+    dependencies=[Depends(get_current_user)], tags=["Protected templates"]
+)
 
 
 @router.get("/", response_model=list[CardTemplate])
@@ -26,7 +27,7 @@ async def get_cards_templates(
     return db.query(Templates).order_by(Templates.id.desc()).all()
 
 
-@router.post("/", response_model=CardTemplate)
+@protected_router.post("/", response_model=CardTemplate)
 async def create_card_template(
     input_data: CardTemplateTitles,
     db: Annotated[Session, Depends(get_db)],
@@ -51,7 +52,7 @@ async def get_card_template(
     return get_card_template_by_id(template_id, db)
 
 
-@router.delete("/{template_id}")
+@protected_router.delete("/{template_id}")
 async def delete_template(
     template_id: int,
     db: Annotated[Session, Depends(get_db)],
@@ -66,3 +67,7 @@ async def delete_template(
     db.commit()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+templates_router.include_router(router)
+templates_router.include_router(protected_router)

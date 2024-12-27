@@ -9,7 +9,8 @@ from database.session import get_db
 from core import security
 from core.auth import authenticate_user, sign_up_new_user
 
-auth_router = router = APIRouter()
+
+auth_router = router = APIRouter(prefix="/api/authentication", tags=["Authentication"])
 
 
 @router.post("/token")

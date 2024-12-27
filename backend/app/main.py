@@ -59,18 +59,10 @@ async def db_session_middleware(
     return response
 
 
-app.include_router(auth_router, prefix="/api/authentication", tags=["Authentication"])
-app.include_router(
-    cards_router,
-    prefix="/api/cards",
-    tags=["Cards"],
-)
-app.include_router(
-    users_router,
-    prefix="/api/users",
-    tags=["Users"],
-)
-app.include_router(images_router, prefix="/api/images", tags=["Images"])
+app.include_router(auth_router)
+app.include_router(cards_router)
+app.include_router(users_router)
+app.include_router(images_router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)

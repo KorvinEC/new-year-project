@@ -12,7 +12,7 @@ from database.models import Images, UserImage
 from database.session import get_db
 
 
-images_router = APIRouter()
+images_router = APIRouter(prefix="/api/images", tags=["Images"])
 
 
 @images_router.get("/cards/{image_uuid}")

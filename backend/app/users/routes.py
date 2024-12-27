@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 from typing import Annotated
 import uuid
@@ -13,9 +12,11 @@ from core.auth import get_current_user
 from users.schemas import User
 from users.utils import get_user_by_id
 
-users_router = router = APIRouter()
-
-logger = logging.getLogger(__name__)
+users_router = APIRouter(prefix="/api/users")
+router = APIRouter(tags=["Users"])
+protected_router = APIRouter(
+    dependencies=[Depends(get_current_user)], tags=["Protected users"]
+)
 
 
 @router.get("/", response_model=list[User], response_model_exclude_none=True)
@@ -25,7 +26,7 @@ async def get_users(
     return db.query(Users).all()
 
 
-@router.get("/me", response_model=User, response_model_exclude_none=True)
+@protected_router.get("/me", response_model=User, response_model_exclude_none=True)
 async def user_me(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     return current_user
 
@@ -38,7 +39,7 @@ async def get_user(
     return get_user_by_id(user_id, db)
 
 
-@router.post("/{user_id}/image")
+@protected_router.post("/{user_id}/image")
 async def add_image_to_user(
     user_id: int,
     image_file: UploadFile,
@@ -79,3 +80,7 @@ async def add_image_to_user(
     db.commit()
 
     return Response(status_code=status.HTTP_201_CREATED)
+
+
+users_router.include_router(router)
+users_router.include_router(protected_router)
