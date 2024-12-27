@@ -44,7 +44,7 @@ async def create_card_template(
     return template
 
 
-@router.get("/{template_id}", response_model=CardTemplate)
+@router.get("/{template_id}/", response_model=CardTemplate)
 async def get_card_template(
     template_id: int,
     db: Annotated[Session, Depends(get_db)],
@@ -52,7 +52,7 @@ async def get_card_template(
     return get_card_template_by_id(template_id, db)
 
 
-@protected_router.delete("/{template_id}")
+@protected_router.delete("/{template_id}/")
 async def delete_template(
     template_id: int,
     db: Annotated[Session, Depends(get_db)],

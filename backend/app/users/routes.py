@@ -31,7 +31,7 @@ async def user_me(current_user: Annotated[User, Depends(get_current_user)]) -> U
     return current_user
 
 
-@router.get("/{user_id}", response_model=User, response_model_exclude_none=True)
+@router.get("/{user_id}/", response_model=User, response_model_exclude_none=True)
 async def get_user(
     user_id: int,
     db: Annotated[Session, Depends(get_db)],

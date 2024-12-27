@@ -15,7 +15,7 @@ from database.session import get_db
 images_router = APIRouter(prefix="/api/images", tags=["Images"])
 
 
-@images_router.get("/cards/{image_uuid}")
+@images_router.get("/cards/{image_uuid}/")
 async def get_card_image(
     image_uuid: uuid.UUID,
     db: Annotated[Session, Depends(get_db)],
@@ -29,7 +29,7 @@ async def get_card_image(
     return FileResponse(image_path_obj)
 
 
-@images_router.get("/users/{image_uuid}")
+@images_router.get("/users/{image_uuid}/")
 async def get_user_image(
     image_uuid: uuid.UUID,
     db: Annotated[Session, Depends(get_db)],
