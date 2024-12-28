@@ -1,7 +1,7 @@
 import typing
 
 import jwt
-from fastapi import Depends
+from fastapi import Depends, UploadFile
 from jwt import PyJWTError
 from sqlalchemy.orm import Session
 
@@ -15,7 +15,9 @@ async def get_current_user(
     db=Depends(session.get_db), token: str = Depends(security.oauth2_scheme)
 ):
     try:
-        payload = jwt.decode(token, security.SECRET_KEY, algorithms=[security.ALGORITHM])
+        payload = jwt.decode(
+            token, security.SECRET_KEY, algorithms=[security.ALGORITHM]
+        )
         username: str = payload.get("sub")
 
         if username is None:
@@ -35,9 +37,7 @@ async def get_current_user(
 
 
 def authenticate_user(
-        db,
-        username: str,
-        password: str
+    db, username: str, password: str
 ) -> typing.Optional[schemas.User]:
     user = get_user_by_username(db, username)
     if not user:
@@ -47,7 +47,9 @@ def authenticate_user(
     return user
 
 
-def sign_up_new_user(db: Session, username: str, password: str, nickname: str):
+def sign_up_new_user(
+    db: Session, username: str, password: str, nickname: str, image_file: UploadFile
+):
     user = get_user_by_username(db, username)
 
     if user:
