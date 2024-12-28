@@ -27,6 +27,8 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
+import { useInView } from "react-intersection-observer"
+import { useEffect } from "react"
 
 const UserContainer = ({ user }: { user: UserType }) => {
   return (
@@ -75,9 +77,17 @@ const TemplatesList = () => {
   const { useCardsTemplatesQuery, cardsTemplatesRemoveMutation } =
     useCardsTemplates();
 
-  const { data, error, isLoading } = useCardsTemplatesQuery();
+  const { data, status, error, hasNextPage, isFetchingNextPage, fetchNextPage } = useCardsTemplatesQuery()
 
-  if (isLoading || isLoadingUser) {
+  const { ref, inView, entry } = useInView()
+
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage()
+    }
+  }, [entry, inView, fetchNextPage])
+
+  if (status === "pending") {
     return (
       <Center>
         <Spinner />
@@ -85,7 +95,7 @@ const TemplatesList = () => {
     );
   }
 
-  if (error) {
+  if (status === "error") {
     return (
       <>
         <h1>Error:</h1>
@@ -149,34 +159,40 @@ const TemplatesList = () => {
             mb={4}
           >
             <UserContainer user={cardTemplate.user} />
-            {isAuthenticated() && (
-              <ButtonGroup mt={4}>
-                <Button
-                  type="submit"
-                  onClick={() => handleCreateTemplate(cardTemplate.id)}
-                  variant={"outline"}
-                >
-                  <Text ml={2}>Заполнить шаблон</Text>
-                </Button>
-                <Button
-                  type="submit"
-                  onClick={() => {
-                    handleRemoveTemplate(cardTemplate.id);
-                  }}
-                >
-                  <DeleteIcon />
-                </Button>
-              </ButtonGroup>
-            )}
-          </Box>
+            {
+              isAuthenticated() && (
+                <ButtonGroup mt={4}>
+                  <Button
+                    type="submit"
+                    onClick={() => handleCreateTemplate(cardTemplate.id)}
+                    variant={"outline"}
+                  >
+                    <Text ml={2}>Заполнить шаблон</Text>
+                  </Button>
+                  <Button
+                    type="submit"
+                    onClick={() => {
+                      handleRemoveTemplate(cardTemplate.id);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </ButtonGroup>
+              )
+            }
+          </Box >
           <SimpleGrid minChildWidth="340px" spacing="24px">
             {cardTemplate.structure.map((structure, index) => (
               <TemplateFields key={index} structure={structure} />
             ))}
           </SimpleGrid>
-        </Box>
+        </Box >
       ))}
-    </Stack>
+      <div ref={ref}>
+        {!hasNextPage && "No data"}
+        {isFetchingNextPage && "Fetching ..."}
+      </div>
+    </Stack >
   );
 };
 

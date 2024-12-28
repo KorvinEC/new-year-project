@@ -8,7 +8,7 @@ export const useUserApi = () => {
     (await axiosInstance.get("users/me")).data
 
   const fetchUsers = async () => 
-    (await axiosInstance.get("users")).data
+    (await axiosInstance.get("users")).data.items
 
   return {
     fetchMe,

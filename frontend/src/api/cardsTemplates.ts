@@ -1,14 +1,14 @@
-import { CardTemplate, TemplateStructureType } from "../types/cardTemplate";
-import { useAxiosInstance } from "./api-client";
+import { CardTemplate, CardTemplateApi, TemplateStructureType } from "../types/cardTemplate"
+import { useAxiosInstance } from "./api-client"
 
 export const useFetchCardsTemplates = () => {
   const axiosInstance = useAxiosInstance();
 
-  return async (): Promise<CardTemplate[]> => {
-    const response = await axiosInstance.get("cards/templates/");
-    return response.data.items;
-  };
-};
+  return async (page: number, per_page: number = 50): Promise<CardTemplateApi> => {
+    const response = await axiosInstance.get(`cards/templates/?page=${page}&per_page=${per_page}`)
+    return response.data
+  }
+}
 
 export const useCreateCardsTemplate = () => {
   const axiosInstance = useAxiosInstance();

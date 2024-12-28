@@ -15,12 +15,12 @@ interface ICardsResponse {
 }
 
 export const useFetchCards = () => {
-  const axiosInstance = useAxiosInstance();
+  const axiosInstance = useAxiosInstance()
 
-  return async (): Promise<ICardsResponse> => {
-    const response = await axiosInstance.get("cards/");
-    return response.data;
-  };
+  return async (page: number, per_page: number = 50): Promise<ICardsResponse> => {
+    const response = await axiosInstance.get(`cards/?page=${page}&per_page=${per_page}`)
+    return response.data
+  }
 };
 
 export const useCreateCardWithImage = () => {

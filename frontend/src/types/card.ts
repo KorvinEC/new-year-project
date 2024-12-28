@@ -1,3 +1,4 @@
+import { Page } from "./pages"
 import { UserType } from "./user"
 
 export type CreateCardFieldType = {
@@ -28,6 +29,10 @@ export type CardType = {
     suggestions: CardFieldsType[]
   }
   user: UserType
+}
+
+export type CardApi = Page & {
+  items: CardType[]
 }
 
 type NominationType = {

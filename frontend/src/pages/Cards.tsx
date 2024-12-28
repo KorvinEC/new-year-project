@@ -28,6 +28,8 @@ import styled from "styled-components";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useAuth } from "../auth";
 import { UserType } from "../types/user";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 
 export const UserContainer = ({ user }: { user: UserType }) => {
   const { logoutMutation } = useAuth();
@@ -160,9 +162,18 @@ const Card = (props: { card: CardType }) => {
 const CardsList = () => {
   const { useCardsQuery } = useCards();
 
-  const { data, isPending, isError, error } = useCardsQuery();
+  const { data, status, error, hasNextPage, isFetchingNextPage, fetchNextPage } = useCardsQuery()
 
-  if (isPending) {
+  const { ref, inView, entry } = useInView()
+
+  useEffect(() => {
+    console.log(inView);
+    if (inView) {
+      fetchNextPage()
+    }
+  }, [entry, inView, fetchNextPage])
+
+  if (status === "pending") {
     return (
       <Center>
         <Spinner />
@@ -170,25 +181,27 @@ const CardsList = () => {
     );
   }
 
-  if (isError) {
-    return (
-      <>
-        <h2>Error:</h2>
-        <p>{JSON.stringify(error)}</p>
-      </>
-    );
+  if (status === "error") {
+    return <>
+      <h2>Error:</h2>
+      <p>{JSON.stringify(error)}</p>
+    </>
   }
 
   return (
     <Box display={"flex"} flexDirection={"column"} gap={4}>
-      {data.items.length > 0 ? (
-        data?.items.map((value) => <Card key={value.id} card={value} />)
-      ) : (
-        <Alert status="info" mt={8}>
-          <AlertIcon />
-          Итоги года не подведены, создайте шаблон и заполните его.
-        </Alert>
-      )}
+      {
+        data.length > 0
+          ? (data.map((value) => <Card key={value.id} card={value} />))
+          : <Alert status="info" mt={8}>
+            <AlertIcon />
+            Итоги года не подведены, создайте шаблон и заполните его.
+          </Alert>
+      }
+      <div ref={ref} style={{ height: "5px" }}>
+        {!hasNextPage && "No data"}
+        {isFetchingNextPage && "Fetching ..."}
+      </div>
     </Box>
   );
 };
