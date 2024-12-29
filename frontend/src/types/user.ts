@@ -12,6 +12,7 @@ export interface RegisterType {
   nickname: string
   username: string
   password: string
+  image: File
 }
 
 type Image = {

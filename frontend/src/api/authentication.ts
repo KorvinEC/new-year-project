@@ -1,4 +1,4 @@
-import { LoginType, RegisterType } from "../types/user";
+import { LoginType, RegisterType, TokenType } from "../types/user";
 import { useAxiosInstance } from "./api-client";
 
 export const useAuthenticationApi = () => {
@@ -17,12 +17,13 @@ export const useAuthenticationApi = () => {
     ).then(response => response.data)
   }
 
-  const regitser = async (registerData: RegisterType) => {
+  const registerWithImage = async (registerData: RegisterType): Promise<TokenType> => {
     const formData = new FormData
 
     formData.append("nickname", registerData.nickname)
     formData.append("username", registerData.username)
     formData.append("password", registerData.password)
+    formData.append("image_file", registerData.image)
 
     return await axiosInstance.post(
       "authentication/signup",
@@ -33,6 +34,6 @@ export const useAuthenticationApi = () => {
 
   return {
     login,
-    regitser
+    registerWithImage,
   }
 }

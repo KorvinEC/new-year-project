@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useRegister } from "../hooks/useRegister";
 import {
   Box,
@@ -7,18 +7,47 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
+import { useNavigate } from '@tanstack/react-router'
 
 export const Register = () => {
   const [nickname, setNickname] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [image, setImage] = useState<File | null>(null)
 
   const { registerMutation } = useRegister();
 
+  const navigate = useNavigate({ from: "/register" })
+
+  useEffect(() => {
+    if (!registerMutation.isIdle) {
+      navigate({to: "/templates"})
+    }
+  }, [registerMutation.isSuccess, registerMutation.isIdle, navigate])
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const files = e.target.files
+
+    console.log(files);
+
+    if (files && files.length > 0) {
+      setImage(files[0])
+    }
+  }
+
   const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    registerMutation.mutate({ nickname, username, password });
+
+    console.log({ nickname, username, password, image })
+
+    if (image === null) {
+      return
+    }
+
+    registerMutation.mutate({ nickname, username, password, image })
   };
+
   const bg = useColorModeValue("#f9f7f5", "#26292d");
 
   return (
@@ -68,6 +97,14 @@ export const Register = () => {
               }}
             />
             <br />
+            <label htmlFor="image">image:</label>
+            <Input
+              id="image"
+              name="image"
+              type="file"
+              datatype="image"
+              onChange={handleImageChange}
+            />
             <Button type="submit">
               {registerMutation.isPending
                 ? "Регистрируемся ..."
