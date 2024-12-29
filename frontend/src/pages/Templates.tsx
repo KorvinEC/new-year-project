@@ -68,7 +68,7 @@ const TemplateFields = (props: { structure: TemplateStructureType }) => {
 const TemplatesList = () => {
   const navigate = useNavigate({ from: "/templates" });
 
-  const { isAuthenticated, isLoading: isLoadingUser } = useAuth();
+  const { isAuthenticated } = useAuth();
   const bg = useColorModeValue("#f9f7f5", "#26292d");
   const toast = useToast();
 

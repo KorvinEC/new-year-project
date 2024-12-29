@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useRegister } from "../hooks/useRegister";
 import {
   Box,
@@ -19,33 +19,24 @@ export const Register = () => {
 
   const navigate = useNavigate({ from: "/register" })
 
-  useEffect(() => {
-    if (!registerMutation.isIdle) {
-      navigate({to: "/templates"})
-    }
-  }, [registerMutation.isSuccess, registerMutation.isIdle, navigate])
-
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
     const files = e.target.files
-
-    console.log(files);
 
     if (files && files.length > 0) {
       setImage(files[0])
     }
   }
 
-  const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
+  const handleOnSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    console.log({ nickname, username, password, image })
 
     if (image === null) {
       return
     }
 
-    registerMutation.mutate({ nickname, username, password, image })
+    await registerMutation.mutateAsync({ nickname, username, password, image })
+      .then(() => navigate({ to: "/templates" }))
   };
 
   const bg = useColorModeValue("#f9f7f5", "#26292d");

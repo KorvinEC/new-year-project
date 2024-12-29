@@ -12,9 +12,12 @@ import { useNavigate } from "@tanstack/react-router";
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+
   const { loginMutation } = useAuth();
+
   const bg = useColorModeValue("#f9f7f5", "#26292d");
+
+  const navigate = useNavigate({ from: "/login" });
 
   if (loginMutation.isPending) {
     return <h1>Logging ...</h1>;
@@ -22,8 +25,8 @@ export const Login = () => {
 
   const handleOnSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await loginMutation.mutateAsync({ username, password });
-    await navigate({ to: "/cards" });
+    await loginMutation.mutateAsync({ username, password })
+      .then(() => navigate({ to: "/templates" }))
   };
 
   return (

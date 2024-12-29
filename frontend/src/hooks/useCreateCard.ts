@@ -11,6 +11,7 @@ type CardType = "card_nominations_data" | "card_suggestions_data";
 export const useCreateCard = () => {
   const [createCard, setCreateCardAtom] = useAtom(createCardAtom);
   const [imagesToAdd, setAddImageToCard] = useAtom(imagesToAddAtom);
+
   const createCardWithImage = useCreateCardWithImage();
 
   const addImageToCard = (
@@ -18,7 +19,6 @@ export const useCreateCard = () => {
     card_data_type: CardDataFieldType,
     image_file: File,
   ) => {
-    console.log(imagesToAdd);
     setAddImageToCard([
       ...imagesToAdd.filter(
         (imageToAdd) =>
@@ -37,6 +37,7 @@ export const useCreateCard = () => {
     }
 
     const newCreateCard: CreateCardType = { ...createCard };
+
     newCreateCard.card_suggestions_data = [
       ...newCreateCard.card_suggestions_data,
       { title: "", subtitle: "", description: "" },
@@ -48,7 +49,9 @@ export const useCreateCard = () => {
     if (!createCard) {
       throw Error("Template should be selected before card creation");
     }
+
     const newCreateCard: CreateCardType = { ...createCard };
+
     newCreateCard.card_suggestions_data =
       newCreateCard.card_suggestions_data.filter(
         (_, index) => index !== removeIndex,

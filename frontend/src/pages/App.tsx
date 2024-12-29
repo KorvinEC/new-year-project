@@ -7,11 +7,11 @@ import { Box } from "@chakra-ui/react";
 
 export const App = () => {
   const { logoutMutation } = useAuth();
+
   const queryClient = useQueryClient();
 
   if (logoutMutation.isSuccess) {
     queryClient.invalidateQueries({ queryKey: "user" });
-    //navigate({to: "/login"})
   }
 
   return (

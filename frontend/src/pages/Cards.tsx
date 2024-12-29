@@ -167,7 +167,6 @@ const CardsList = () => {
   const { ref, inView, entry } = useInView()
 
   useEffect(() => {
-    console.log(inView);
     if (inView) {
       fetchNextPage()
     }

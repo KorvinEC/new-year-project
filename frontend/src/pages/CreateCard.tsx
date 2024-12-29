@@ -1,7 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useCreateCard } from "../hooks/useCreateCard";
-
 import {
   Box,
   Button,
@@ -46,7 +45,6 @@ const Nomination = (props: { structure: FieldProps }) => {
     setPreview(objectUrl);
     addImageToCard(index, "nominations", file);
   };
-  console.log(preview);
 
   return (
     <Card w={"350px"}>
@@ -234,25 +232,14 @@ const Suggestions = () => {
 };
 
 export const CreateCards = () => {
-  const navigate = useNavigate({ from: "/cards/create" });
-  const { createCard, createCardMutation } = useCreateCard();
+  const { createCardMutation } = useCreateCard();
 
-  useEffect(() => {
-    if (!createCard && createCardMutation.isIdle) {
-      navigate({ to: "/templates" });
-    }
-  }, [
-    createCardMutation.isSuccess,
-    createCard,
-    createCardMutation.isIdle,
-    navigate,
-  ]);
+  const navigate = useNavigate({ from: "/cards/create" });
 
   const handleOnSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    createCardMutation.mutateAsync().then(() => {
-      navigate({ to: "/cards" });
-    });
+    await createCardMutation.mutateAsync()
+      .then(() => navigate({ to: "/cards" }))
   };
 
   const colorScheme = useColorModeValue("blue", "orange");

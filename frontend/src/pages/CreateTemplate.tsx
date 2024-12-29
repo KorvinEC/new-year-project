@@ -79,18 +79,16 @@ const Nomination = ({
 };
 
 const CreateTemplateForm = () => {
-  const navigate = useNavigate({ from: "/templates/create" });
   const { template, addTemplateField, createCardsTemplateMutation } =
     useCreateTemplate();
 
-  const handleOnSubmit = (e: ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    createCardsTemplateMutation.mutate(template);
-  };
+  const navigate = useNavigate({ from: "/templates/create" });
 
-  if (createCardsTemplateMutation.isSuccess) {
-    navigate({ to: "/templates" });
-  }
+  const handleOnSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await createCardsTemplateMutation.mutateAsync(template)
+      .then(() => navigate({ to: "/templates" }));
+  };
 
   const colorScheme = useColorModeValue("blue", "orange");
 
