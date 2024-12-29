@@ -33,13 +33,9 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile
-    command: sh -c "npm run dev"
     tty: true
     volumes:
-      - type: bind
-        source: ./frontend
-        target: /app
-        consistency: cached
+      - ./frontend:/app/src
     ports:
       - '5000:5000'
     depends_on:
