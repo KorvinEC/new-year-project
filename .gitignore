@@ -2,7 +2,8 @@ venv
 http_requests
 *__pycache__/
 .idea
-*images/
+images/*
+backend/images/*
 .docker
 
 # Logs
